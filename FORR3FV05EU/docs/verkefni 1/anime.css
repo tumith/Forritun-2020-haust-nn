@@ -1,0 +1,50 @@
+.path{
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: dash 5s linear forwards;
+  }
+  
+  @keyframes dash {
+    from {
+      stroke-dashoffset: 822;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  
+  /* .line:hover {
+    fill: blue;
+  } */
+  
+  /*@keyframes hideshow {
+       from {
+            opacity: 0; 
+      }
+      to {
+          opacity: 1; 
+      }
+  } 
+
+  @-webkit-keyframes hideshow {
+      from {
+            opacity: 0; 
+      }
+      to {
+          opacity: 1; 
+      }
+  }
+  
+  .text-1 {
+    animation: hideshow 15s ease infinite;
+  }
+  
+  .text-2 {
+    animation: hideshow 15s ease infinite;
+  }
+  
+  .text-3 {
+    animation: hideshow 15s ease infinite;
+  } */
+  
+  
