@@ -13,11 +13,11 @@
     }
   }
   
-  /* .line:hover {
+   .line:hover {
     fill: blue;
-  } */
+  } 
   
-  /*@keyframes hideshow {
+  @keyframes hideshow {
        from {
             opacity: 0; 
       }
@@ -45,6 +45,6 @@
   
   .text-3 {
     animation: hideshow 15s ease infinite;
-  } */
+  } 
   
   
