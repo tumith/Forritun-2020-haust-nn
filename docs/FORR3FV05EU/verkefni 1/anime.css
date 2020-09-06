@@ -15,6 +15,7 @@
   
    .line:hover {
     fill: blue;
+    stroke: blue;
   } 
   
   @keyframes hideshow {
@@ -38,13 +39,4 @@
   .text-1 {
     animation: hideshow 15s ease infinite;
   }
-  
-  .text-2 {
-    animation: hideshow 15s ease infinite;
-  }
-  
-  .text-3 {
-    animation: hideshow 15s ease infinite;
-  } 
-  
   
