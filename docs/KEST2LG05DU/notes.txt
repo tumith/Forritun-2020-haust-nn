@@ -1,0 +1,10 @@
+cat --> outputs the countert of file
+split -->splits a file into Multipel files
+nl --> numbers the lines og a file
+head --> outputs the first 10 lines of a file
+tail --> outputs the last 10 lines of a file
+paste --> will merge one or more files
+sort --> sort files
+
+tr --> Translates contants of file from lower to uppercase
+sed -->
