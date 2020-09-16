@@ -1,0 +1,62 @@
+1. Ray-Tracing{
+	Það er skotið ray sem skoðar hvort hann regst í eitthvað sem gefur til kynna hvaða form eða litur 
+	munstrið á að vera en svo getur það farið í gegnum eitthvað sem getur líka haft áhrif á enda útkomu
+	formsins.
+	Þetta getur líka innihaldið motion blur, depth of field, penumbras, translucency anog fuzzy reflections.
+   }
+   Rasterization{
+	Þá eru tree vídar hlutir síndir á tví vídar skjá.
+	dæmi:
+		það er sett tríhirninga og breit þeim kassa til að mynda polygon mynd
+   }
+2.
+	1. WebGl:
+		halda áfram hér
+	
+	2. GPU:
+		halda áfram hér
+	
+	3. rasterizing
+		halda áfram hér
+	
+	4. GLSL
+		halda áfram hér
+
+	5. Vertex
+		halda áfram hér
+
+	6. Primative
+		halda áfram hér
+
+	7. Fragment
+		halda áfram hér
+
+	8. Pixel
+		halda áfram hér
+
+	9. Clip space
+		halda áfram hér
+
+	10. View frustum
+		halda áfram hér
+
+	11. Z-buffering
+		halda áfram hér
+
+	12. Right-hand coordinate system (RHS)
+		halda áfram hér
+
+	13. Frame buffer
+		halda áfram hér
+
+	14. Shaders
+		halda áfram hér
+
+	15. FPS - afhverju er það mismunandi eftir t.d. bíómynd og tölvuleik
+		halda áfram hér
+
+	16. Refresh rate t.d 60 Hertz
+		halda áfram hér (90 er betra og núna er mikið af skjáum komir um 240 og núna er sími sem nær 120 Hr)
+
+3. Útskýrðu rendering pipeline í WebGL útfrá JavaScript, GLSL (OpenGL Shading Language), buffer, triangle, rasterizer, fragment shaders.
+ 
