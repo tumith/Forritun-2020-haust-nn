@@ -294,7 +294,6 @@ chapter 12{
 		# Another method of uncompressing files compressed using the xz command is to use the unxz command. Using unxz to uncompress a file is very similar to using gunzip because it uses similar syntax.
 	
 		!!! There are a huge number of options for the xz command, some relating to the compression ratio. Keep in mind when using xz that the more aggressive the compression, the harder the processor will have to work.
-
 	}
 
 	xzcat{
@@ -387,7 +386,6 @@ chapter 12{
 			### -f ARCHIVE = Operate on the given archive.
 
 		}
-	
 	}
 
 	zip and unzip{
@@ -403,6 +401,118 @@ chapter 12{
 		### To view the contents of a zip file without unpacking it, use the unzip command with the list -l option:
 	}
 
+	cpio{
+		## In copy-out mode, the cpio command will copy files from a directory into an archive.
+
+		## In copy-out mode, the cpio command will copy files from a directory into an archive.
+
+		## There is a third mode called the copy-pass mode. In this mode, the cpio command copies files from one directory to another, which combines the copy-out and copy-in modes without creating an archive file.
+	
+		Copy-Out Mode{
+			### The -o option puts the cpio command into copy-out mode
+
+			### Using the verbose -v option will cause the cpio command to list the files that it processes
+
+			in terminal {
+				ls | cpio -ov > archive.cpio
+			}
+
+			find command{
+
+				in terminal{
+					find . -depth -print | cpio -vo > /tmp/ar.cpio
+				}
+
+			}
+		}
+
+		Copy-In Mode{
+
+			### To extract the files that are in a cpio archive, use the -i option with the cpio command to specify copy-in mode
+
+			### By default, cpio will not overwrite existing files unless the -u option is used.
+
+			!!! ### The cpio command will not create directories unless the -d option is used.
+
+			in terminal{
+
+				cpio -idv /tmp/test < /tmp/ar.cpio
+
+				find ~ | cpio -pd /tmp/destination
+
+			}
+
+			## To specify the pass-through mode of the cpio command, specify the -p option. Again, if any directories are included, the -d option needs to be specified
+
+			## To prevent problems with files that have white space characters (like the spacebar character) embedded in them, specify the -print0 option to the find command
+
+			## For the cpio command to process the list of null separated files, add the --null option. This results in a more robust version of the previous pass-through command
+
+			in terminal{
+				find . -print0 | cpio --null -pvd /tmp/destination
+			}
+
+		}
+	}
+
+	dd{
+		# The dd command is a utility for copying files or entire partitions at the bit level
+
+		dd features{
+			
+			It can be used to clone or delete (wipe) entire disks or partitions.
+			
+			It can be used to copy raw data to removable devices, such as USB drives and CDROMs.
+			
+			It can backup and restore the MBR (Master Boot Record), a critical software component that is used to boot the system.
+			
+			It can be used to create a file of a specific size that is filled with binary zeros, which can then be used as a swap file (virtual memory).
+
+		}
+
+		dd commonly used special arguments{
+			if=FILE : The input file to be read.
+			of=FILE : The output file to be written.
+			bs=SIZE : The block size to be used. By default, the value is considered to be in bytes. Use the following suffixes to specify other units: K, M, G, and T for kilobytes, megabytes, gigabytes, and terabytes respectively.
+			count=NUMBERS : The number of blocks to read from the input file.
+		}
+
+		in terminal{
+			# In the following example, a file named /tmp/swapex is created with 500 "one-megabyte" size blocks of zeros:
+
+			dd if=/dev/zero of=/tmp/swapex bs=1M count=500
+		}
+
+	}
+
+	key terms{
+		
+		bunzip2
+			Command that uncompresses files compressed using the <command>bzip2</command> command and removes the .bz2 extension.
+			Section 12.4 
+		bzcat
+			Command prints the content of specified files compressed with the <command>bzip2</command> command to the standard output.
+			Section 12.5 
+		gunzip
+			Command that decompress files created by gzip, zip, compress, compress -H or pack.
+			Section 12.2 
+		gzip
+			Command used to comperess or expand files. Gzip reduces the size of the named files using Lempel-Ziv coding (LZ77). Whenever possible, each file is replaced by one with the extension .gz, while keeping the same ownership modes, access and modification times. (The default extension is -gz for VMS, z for MSDOS, OS/2 FAT, Windows NT FAT and Atari.)
+			Section 12.2 
+		unxz
+			A method of uncompressing files compressed using the <command>xz</command> command.
+			Section 12.6 
+		xz
+			Command that can compress or decompress .zx or .lzma files. xz is a general-purpose data compression tool with command line syntax similar to gzip(1) and bzip2(1). The native file format is the .xz format, but also the legacy .lzma format and raw compressed streams with no container format headers are supported.
+			Section 12.6 
+		xzcat
+			Command used to print the contents of files compressed with the <command>xz</command> command to standard output on the terminal without uncompressing the target file.
+			Section 12.7 
+		zcat
+			Command used to display the contents of a compressed file from a compressed archive created by the <command>tar</command> or <command>gzip</command> commands without uncompressing it. Its effect is identical to running the <command>gzip -c</command> command:
+			Section 12.3 
+
+	}
 }
 
 
