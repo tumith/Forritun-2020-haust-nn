@@ -270,6 +270,8 @@ chapter 12{
 
 		!!! The bzip2 command should be used with caution since its default behavior is to replace the original file specified with a compressed version.
 
+		!!! ### -r recursion dose not work with bzip2 and bunzip2
+
 		### The -v option gives a verbose output so you can see how the file was processed
 	}
 
