@@ -1,3 +1,26 @@
+"""
+
+MEANING OF THINGS
+
+	!!! = important
+
+	# = command
+
+	## = interesting
+
+	### = options
+
+	in terminal = in linux terminal
+
+	{} = contents of a specific thing
+
+	syntax = syntax
+
+"""
+
+### -r = is most often recursiv
+
+
 chapter 11{
 	ps
 	{ 
@@ -59,7 +82,7 @@ chapter 11{
 		}
 	}
 
-	# To write a couple of command in one line use the semicolon [ ; ]
+	## To write a couple of command in one line use the semicolon [ ; ]
 
 
 	Background Processes
@@ -77,7 +100,7 @@ chapter 11{
 			kill [OPTION]... <pid>
 		}
 
-		specifying signals for kill command {
+		### specifying signals for kill command {
 			-<signal>
 			-s <signal>
 			--signal <signal>
@@ -207,7 +230,180 @@ chapter 11{
 }
 
 
+chapter 12{
+	# Archiving: Combines multiple files into one, which eliminates the overhead in individual files and makes it easier to transmit.
 
+	#Compression: Makes the files smaller by removing redundant information
+	
+	gzip and gunzip{
+		# The gzip command is used to create a compressed file. Likewise, the gunzip command is used to view the contents of a compressed file, as well as extract those contents.
+		
+		syntax{
+			gzip [OPTION]... [FILE]...
+			gunzip [OPTION]... [FILE]...
+		}
+
+		# gzip2 compresses
+		# gunzip2 uncompresses
+
+		!!! The gzip command should be used with caution since its default behavior is to replace the original file specified with a compressed version.
+	}
+
+	zcat{
+		# The zcat command is used to display the contents of a compressed file without actually uncompressing it
+
+		syntax{
+			zcat [OPTION]... [FILE]...
+		}
+	}
+
+	bzip2 and bunzip2{
+		#The bzip2 and bunzip2 commands work in a nearly identical fashion to the gzip and gunzip commands. However, while the gzip command uses the Lempel-Ziv data compression algorithm, the bzip utilities use a different compression algorithm called Burrows-Wheeler block sorting, that can compress files smaller than gzip at the expense of more CPU time
+	
+		syntax{
+			bzip2 [OPTION]... [FILE]...
+			bunzip2 [OPTION]... [FILE]...
+		}
+
+		# bzip2 compresses
+		# bunzip2 uncompresses
+
+		!!! The bzip2 command should be used with caution since its default behavior is to replace the original file specified with a compressed version.
+
+		### The -v option gives a verbose output so you can see how the file was processed
+	}
+
+	bzcat{
+		# The bzcat command prints the content of specified files compressed with the bzip2 command to the standard output.
+
+		syntax{
+			bzcat [OPTION]... [FILE]...
+		}
+	}
+
+	xz and unxz{
+		# Another archival tool similar to gzip and bzip2 is the xz command.
+		### To compress a group of files individually, use the xz command with the -z option. Compression is the default operation mode, and therefore if the xz command is run with no options, the -z option is implied.
+
+		syntax{
+			xz [OPTION]... [FILE]...
+		}
+
+		### The -d option can be used with the xz command to uncompress the files just as easily
+
+		# Another method of uncompressing files compressed using the xz command is to use the unxz command. Using unxz to uncompress a file is very similar to using gunzip because it uses similar syntax.
+	
+		!!! There are a huge number of options for the xz command, some relating to the compression ratio. Keep in mind when using xz that the more aggressive the compression, the harder the processor will have to work.
+
+	}
+
+	xzcat{
+		# The xzcat command is used to print the contents of files compressed with the xz command to standard output on the terminal without uncompressing the target file.
+
+		syntax{
+			xzcat [FILE]...
+		}
+	}
+
+	tar{
+		## The tar command is typically used to make archives within Linux. These tar archive files, sometimes called tarballs, were originally used to backup data onto magnetic tape. Tar is derived from the words "tape archive".
+
+		# While the primary purpose of the tar command is to merge multiple files into a single file, it is capable of many different operations, and there are numerous options
+
+			tar functionalitys{
+				
+				### Create = -c # Make a new archive out of a series of files.
+
+				### Extract = -x # Pull one or more files out of an archive.
+
+				### List = -t # Show the contents of the archive without extracting.
+
+			}
+
+		Create Mode{
+
+			syntax{
+				tar -c [-f ARCHIVE] [OPTIONS] [FILE...]
+			}
+
+			### -c = create an archive.
+			
+			### -f ARCHIVE = Use the ARCHIVE file. The argument ARCHIVE will be the name of the resulting archive file.
+
+			## All the remaining arguments, [FILE…], are considered as input file names either as a list of files, as a wildcard, or both.
+
+			in terminal{
+				tar -cf mydocuments.tar ~/Documents
+			}
+			
+			### -v = Verbosely list the files processed.
+			
+			### -z = Compress (or decompress) the archive using the gzip command.
+
+			### -j = Filter the archive through the bzip2 command
+
+			### -J = Filter the archive through the xz command.
+
+			## File extensions are not relevant to Linux; however, it is customary to add .tar.gz to the name of the compressed archive. 
+
+			in terminal{
+				tar -cvzf mydocuments.tar.gz ~/Documents
+			}
+
+		}
+
+		List Mode{
+			
+			syntax{
+				tar -t [-f ARCHIVE] [OPTIONS]
+			}
+
+			### -t = List the files in the archive. (table of contents)
+
+			### -f ARCHIVE = Operate on the given archive. 
+
+			in terminal{
+				tar -tf mydocuments.tar.gz
+			}
+
+			## note that the -f option is used last so that the file name can be specified as an argument to this option
+
+			in terminal{
+				# you can add the verbose (-v) to get a more detailed output
+
+				tar -tvf mydocuments.tar.gz
+			}
+
+		}
+
+		Extract Mode{
+
+			syntax{
+				tar -x [-f ARCHIVE] [OPTIONS]
+			}
+
+			### -x = Extract files from an archive.
+
+			### -f ARCHIVE = Operate on the given archive.
+
+		}
+	
+	}
+
+	zip and unzip{
+
+		syntax{
+			zip [OPTIONS]... [FILE]...
+		}
+
+		### One especially useful option for the zip command is the -r option, which allows the zip command to recursively compress
+
+		# The unzip command is used to extract the files from the zip archive file. Use the unzip command without options to extract a zip archive
+
+		### To view the contents of a zip file without unpacking it, use the unzip command with the list -l option:
+	}
+
+}
 
 
 

@@ -52,23 +52,93 @@ function init(){
 
    // 4. Visible Objects
    const geometry = new THREE.BoxBufferGeometry( 2, 2, 2 ); // create a geometry
-   const material = new THREE.MeshBasicMaterial(); // create a default (white) Basic material, the surface properties of objects, usually need also light (exception here)
+   const textureLoader = new THREE.TextureLoader(); // create a texture loader
+   const texture = textureLoader.load( 'textures/uv_test_bw.png' ); // Load a texture. See the note in chapter 4 on working locally, or the page # https://threejs.org/docs/#manual/introduction/How-to-run-things-locally # if you run into problems here
+   texture.encoding = THREE.sRGBEncoding; // set the "color space" of the texture
+   texture.anisotropy = 16; // reduce blurring at glancing angles
+   const material = new THREE.MeshStandardMaterial( { // create a Standard material using the texture we just loaded as a color map
+      map: texture,
+    } );
+   
    mesh = new THREE.Mesh( geometry, material ); // create a Mesh containing the geometry and material
    scene.add( mesh ); // add the mesh to the scene if we want to see it (mesh is called a child of the scene). scene.remove(object) removes from scene
    // to access material then mesh.material
 
+   //Create a directional
+   const light = new THREE.DirectionalLight( 0xffffff, 3.0);
+
+   // move the light back and up a bit
+   light.position.set( 10, 10, 10 );
+
+   // remember to add the light to the scene
+   scene.add( light );
+
    // 5. Create the renderer (a machine), a number of renderers are available in three.js,
-   renderer = new THREE.WebGLRenderer(); // most full-featured and powerful, creates canvas automatically
+   renderer = new THREE.WebGLRenderer( { antialias: true } ); // most full-featured and powerful, creates canvas automatically
    renderer.setSize( container.clientWidth, container.clientHeight ); // in Chrome that default canvas size is 150 x 300 pixels, needs auto resize fix
    renderer.setPixelRatio( window.devicePixelRatio );
+
+   // set the gamma correction so that output colors look
+   // correct on our screens
+   renderer.gammaFactor = 2.2;
+   renderer.gammaOutput = true;
+
    container.appendChild( renderer.domElement ); // add the automatically created <canvas> element to the page
    // Note! We can create one manually and tell the renderer to use that instead if we need greater control.
+
+   renderer.setAnimationLoop( () => {
+
+      update();
+      render();
+
+   } );
+
 }
-function animete() {
+function animate() {
+   // call animate recursively
+   requestAnimationFrame( animate );
+
    // 6. render, or 'create a still image' with the camera of the scene and output to canvas
    renderer.render( scene, camera );
 }
 
+function update(){
+   
+   // increase the mesh's rotation each frame
+   mesh.rotation.z += 0.01;
+   mesh.rotation.x += 0.01;
+   mesh.rotation.y += 0.01;
+
+}
+
+// render, or 'draw a still image', of the scene
+function render(){
+
+   renderer.render( scene, camera );
+
+}
+
+function onWindowResize() {
+
+   // set the aspect ratio to match the new browser window aspect ratio
+   camera.aspect = container.clientWidth / container.clientHeight;
+
+
+   // update the camera's frustum
+   camera.updateProjectionMatrix();
+
+   // update the size of the renderer AND the canvas
+   renderer.setSize( container.clientWidth, container.clientHeight )
+   
+
+   console.log( 'You resized the browser window!' );
+
+}
+
+window.addEventListener( 'resize', onWindowResize );
+
+// call the init function to set everything up
 init();
 
-animete();
+// call on the animate function to start the animateion
+animate();
