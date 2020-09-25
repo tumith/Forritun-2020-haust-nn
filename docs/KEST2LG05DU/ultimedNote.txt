@@ -1,0 +1,272 @@
+chapter 11{
+	ps
+	{ 
+		ps[OPTION]...   # The ps command can be used to list processes
+				# The ps command supports three styles of options{
+					Traditonal UNIX style short options that use a single hyphens[-] in front of a character
+					GNU style long options that use two hyphens[-] in front of a word
+					BSD style options that use no hyphens[-] and single character options
+				}
+				# The ps command will display the processes that are running in the current terminal by default
+
+			#ps Columns info{
+				PID : The process identifier, witch is unique to the process. This info is useful to control the process by its ID number
+				TTY : The name of the terminal ir pseudo-terminal where the process us running. This ifno is useful to distinguish between differebt processes that have the same name
+				TIME : The total amount of processor time used by the process. Typically, this info int't used by regular users.
+				CMD : The command that started the process.
+			}
+
+			# ps x [BSD option] state {
+				D : Uninterruptible Sleep
+				R : Running
+				S : Interruptible Sleep
+				T : Stopped
+				Z : Zombie
+			}
+
+			# ps aux [BSD option] {
+				a : Allows the ps command to show all processes
+				u : Show processes by all users and ignore restrictions to only list the user's processes
+				x : List all processes and remove the restriction to only display
+			}# it shows everything
+
+			in terminal{
+				ps aux | grep -i sshd # To find all processes that match the sshd string
+			}
+	}
+
+	pgrep
+	{
+		in terminal {
+			pgrep -i sshd # If you wanted to find all instances of the sshd
+
+			pgrep -li sshd # The output shows the process IDs (PID) of the processes running that match the sshd string. Additionally, the -l option can be used with the pgrep command to list the process name along with the PID
+
+			# It is also possible to search for processes owned by a specific user by using the -u option
+
+			pgrep -u sysadmin -l # In the example above, the -u and -l options displayed the bash process which has the PID 56 and is owned by the sysadmin user.
+		}
+
+	}
+
+	watch
+	{
+		// watch [OPTION]... COMMAND \\
+		# The watch command can be use with date for a good test
+		# The watch command can also be used with the ps command to monitor running processes in the shell
+		in terminal {
+			watch ps aux
+		}
+	}
+
+	# To write a couple of command in one line use the semicolon [ ; ]
+
+
+	Background Processes
+	{
+		COMMAND & 
+		
+		in terminal{
+			sleep 3 & # this runs in the Background
+		}
+	}
+
+	kill
+	{
+		syntax of kill command{
+			kill [OPTION]... <pid>
+		}
+
+		specifying signals for kill command {
+			-<signal>
+			-s <signal>
+			--signal <signal>
+
+			example for interrupt signal{
+				-2
+				-INT
+				-SIGINT
+			}
+		}
+
+
+		in terminal{
+			kill -l # To see a list of all of the signals available for your system
+ 		}
+		
+
+		common signals{
+			number : full name : short name : purpose
+			1      : SIGHUB    :  HUP       : Hang up, usually ends a process
+			2      : SIGINT    :  INT       : Interrupt, usually ends a process
+			3      : SIGQUIT   :  QUIT      : Quit, usually ends a process
+			9      : SIGKILL   :  KILL      : Kill, forcefully ends a process
+			15     : SIGTERM   :  TERM      : Terminate, usually ends a process
+			18     : SIGCONT   :  CONT      : Continue, resumes a stopped process
+			19     : SIGSTOP   :  STOP      : Stop, forcefully stops a process
+			20     : SIGTSTP   :  TSTP      : Terminal Stop, usually stops a process
+		}
+	}
+	
+	pkill{
+		syntax{
+			pkill [OPTION]... PATTERN
+		}
+		
+		# the pkill command allows users to specify a pattern that matches a process name and then sends signals to that process
+	}
+	
+	killall{
+		syntax{
+			killall [OPTION]... NAME
+		}
+
+		in terminal{
+			killall sleep
+		}
+
+		# The killall command can also be used to terminate one or more processes by name and other criteria such as the user owner of the process and system processes.
+	}
+
+	# top is like the task manager
+
+	key terms{ 
+		&
+			When used with a process will immediately background the process or task in a terminal. This will allow the terminal to be freed up for additional tasks.
+			Section 11.2.6 
+
+		bg
+			A job control command that resumes the execution of a suspended process without bringing it to the foreground.
+			Section 11.2.7 
+
+		fg
+			A job control command that resumes execution of a suspended process by bringing it to the foreground.
+			Section 11.2.7 
+
+		free
+			Command used to display the amount of free and used memory in the system. This utility will display both the physical and swap memore on the system as well as the buffers used by the kernel.
+			Section 11.2.3 | Section 11.3 
+
+		jobs
+			Command that lists all active jobs in the current terminal or shell.
+			Section 11.2.6 
+
+		kill
+			Command used to terminate a process. There are specific signals that can terminate a process in different ways. If no signal is provided the TERM signal will be sent to the process.
+			Section 11.2.8 
+
+		killall
+			Command similar to kill, but killall will allow a user to terminate a process by name as opposed to ID.
+			Section 11.2.8 
+
+		nice
+			Command used to change the priority of a process. The higher the nice value the lower the priority of a process. Nice values range from -20 to 20.
+			Section 11.2.10 
+
+		nohup
+			Command used to run a command immune to hangups, with output to a non-tty. If standard input is a terminal, it can be redirected from /dev/null. If standard output is the terminal, append the ouptput to nohup.out. This should be located in the user's home directory.
+			Section 11.2.9 
+
+		pgrep
+			Command that parses through the running processes and looks for the specified names or other criteria of processes.
+			Section 11.2.2 
+
+		pkill
+			Sends a specified signal (SIGTERM by default) to each process instead of listing them on stdout.
+			Section 11.2.8 
+
+		ps
+			Command used to report a snapshot of the current processes. Different options are available with ps to report more specific information.
+			Section 11.2.1 
+
+		renice
+			Command used to change the priority of a process while that process is running. The higher the value the lower the priority.
+			Section 11.2.10 
+
+		screen
+			A full-screen software program that can be used to multiplex a physical console between several processes (typically interactive shells). It offers a user to open several separate terminal instances inside a one single terminal window manager. The screen application is very useful, if you are dealing with multiple programs from a command line interface and for separating programs from the terminal shell. It also allows you to share your sessions with others users and detach/attach terminal sessions.
+			Section 11.4.1 
+
+		tmux
+
+			Section 11.4.2 
+
+		top
+			Command similar to ps, however top will display the curent real-time view of all running tasks and processes.
+			Section 11.2.11 
+
+		uptime
+			Command that will display how long a system has been running. uptime gives a one line display showing the current time, how long ths system has been running, how many users are logged in, and the system load averages for the pas 1, 5 and 15 minutes.
+			Section 11.3 
+			
+		watch
+
+			Section 11.2.3 
+	}
+
+}
+
+
+
+
+
+
+chapter 13 and 14{
+
+
+	chmod{
+		# + = - u = user, g = group, o = other, a = all
+
+		# r = read
+		# w = write
+		# x = execute
+
+		in terminal {
+			touch permissions.txt
+
+			chmod g-r permissions.txt # minus read from group
+			chmod g+r permissions.txt # add read to group
+
+			chmod u+w permissions.txt # add write to user
+
+			chmod o=w,g-r,u+x permissions.txt # other = write, group - read, user add execute
+
+			chmod a=- permissions.txt # clear all permissions
+		} 
+
+		# read(r) = 4
+		# write(w) = 2
+		# execute(x) = 1
+		
+
+		in terminal{
+			chmod 765 permissions.txt # adding read, write and execute
+
+			chmod 000 permissions.txt # clear all permissions
+
+			# chmod user,group,other permissions.txt
+		}
+
+	}
+
+
+	users{
+		sudo adduser **name** # create user
+
+		cat /etc/passwd | grep ^**name** # to loced user
+	}
+
+	df -i # Inodes table
+
+
+	links{
+		touch file.txt file1.txt
+
+
+		ln file.txt hardlink_to_file.txt # using hardlink to link to file.txt
+
+		ln -s file1.txt symlink_to_file1.txt # -s for softlinks this is a symbolicklink
+
+		ls -li # see everything with Inodes numbers
+	}
+}
