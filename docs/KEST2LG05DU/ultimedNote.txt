@@ -521,13 +521,93 @@ chapter 12{
 
 chapter 13 and 14{
 
+	File Type Field{
+		-rwxr-xr-x. 1 root root 133792 Jan  18  2018 /bin/ls
+		^
+	}
+
+	Permissions Field{
+		-rwxr-xr-x. 1 root root 133792 Jan  18  2018 /bin/ls
+		 ^^^^^^^^^
+	}
+
+	User Owner Field{
+		-rwxr-xr-x. 1 root root 133792 Jan  18  2018 /bin/ls
+					  ^^^^
+	}
+
+	Group Owner Field{
+		-rwxr-xr-x. 1 root root 133792 Jan  18  2018 /bin/ls
+						   ^^^^
+	}
+
+	Switching Users{
+		
+		!!! ## By default, if a username is not specified, the su command opens a new shell as the root user. The following two commands are equivalent ways to start a shell as the root user:
+
+		syntax{
+			su [OPTIONS] [USERNAME]
+		}
+
+		login shell{
+			# When switching users, utilizing the login shell option is recommended as the login shell fully configures the new shell with the settings of the new user, ensuring any commands executed run correctly. If this option is omitted, the new shell changes the UID but doesn't fully log in as the user
+		
+			The login shell option can be specified one of three ways:{
+
+				in terminal{
+
+					su -
+					su -l
+					su --login
+
+				}
+
+			}
+		}
+
+		sudo{
+			
+			syntax{
+				sudo [OPTIONS] COMMAND
+			}
+
+		}
+	}
+
+	Changing File User Owner{
+
+		## Initially, the owner of a file is the user who creates it. The user owner can only be changed by a user with root privileges using the chown command
+
+		syntax{
+			chown [OPTION]... [OWNER] FILE..
+		}
+	}
+
+	Switching Groups{
+		## To create a file or directory that will be owned by a group different from your current primary group, one option is to change your current primary group to another group you belong to by using the newgrp command.
+
+		syntax{
+			newgrp [GROUP]
+		}
+
+		## Once in the new shell, any file created, in this case, newfile.txt, will belong to the new primary group
+	}
+
+	Changing File Group Owner{
+
+		## Another option is for the user owner of the file to change the group owner by using the chgrp command. For example, if you forgot to use the newgrp command to switch to the user’s primary group before creating the file.
+	}
 
 	chmod{
-		# + = - u = user, g = group, o = other, a = all
+		symbol method{
+			
+			# + = - u = user, g = group, o = other, a = all
 
-		# r = read
-		# w = write
-		# x = execute
+			# r = read
+			# w = write
+			# x = execute
+
+		}
 
 		in terminal {
 			touch permissions.txt
@@ -541,11 +621,14 @@ chapter 13 and 14{
 
 			chmod a=- permissions.txt # clear all permissions
 		} 
-
-		# read(r) = 4
-		# write(w) = 2
-		# execute(x) = 1
-		
+		octal method{
+			
+			read( r ) = 4
+			write( w ) = 2
+			execute( x ) = 1
+			none = 0
+			
+		}
 
 		in terminal{
 			chmod 765 permissions.txt # adding read, write and execute
@@ -555,8 +638,137 @@ chapter 13 and 14{
 			# chmod user,group,other permissions.txt
 		}
 
+
+		more about octal method{
+			7 : rwx
+			6 : rw-
+			5 : r-x
+			4 : r--
+			3 : -wx
+			2 : -w-
+			1 : --x
+			0 : ---
+		}
+
+		setuid{
+			# When the setuid permission is set on an executable binary file (a program), the binary file is run as the owner of the file, not as the user who executed it. This permission is set on a handful of system utilities so that they can be run by normal users, but executed with the permissions of root, providing access to system files that the normal user doesn't normally have access to.
+
+			in terminal symbolically{
+
+				add{
+					chmod u+s file
+				}
+
+				remove{
+					chmod u-s file
+				}
+
+			}
+
+			in terminal octal{
+				
+				add{
+					chmod 4000 file
+				}
+
+				remove{
+					chmod 0000 file
+				}
+			}
+
+			## Permission with the octal method using three-digit codes. When a three-digit code is provided, the chmod command assumes that the first digit before the three-digit code is 0. Only when four digits are specified is a special permission set.
+			## If three digits are specified when changing the permissions on a file that already has a special permission set, the first digit will be set to 0, and the special permission will be removed from the file.
+		}
+
+		setgid{
+			# The setgid permission is similar to setuid, but it makes use of the group owner permissions. There are two forms of setgid permissions: setgid on a file and setgid on a directory. The behavior of setgid depends on whether it is set on a file or directory.
+			# The setgid permission on a file works very similarly to the setuid permission, except that instead of executing as the user who owns the file, setgid permission will execute as the group that owns the file. The system allows the user running the command to effectively belong to the group that owns the file, but only in the setgid program.
+		
+			in terminal symbolically{
+				
+				add{
+					chmod g+s <file|directory>
+				}
+
+				remove{
+					chmod g-s <file|directory>
+				}
+			}
+
+			in terminal octal{
+				
+				add{
+					chmod 2000 <file|directory>
+				}
+
+				remove{
+					chmod 0000 <file|directory>
+				}
+			}
+
+		}
+
+		Sticky Bit{
+			# Setting this permission can be important to prevent users from deleting other user's files.
+
+			in terminal symbolically{
+				
+				add{
+					chmod o+t <directory>
+				}
+				
+				remove{
+					chmod o-t <directory>
+				}
+			}
+
+			in terminal octal{
+				
+				add{
+					chmod 1000 <file|directory>
+				}
+
+				remove{
+					chmod 0000 <file|directory>
+				}
+			}
+		}
+
+		special Sticky + setgid{
+			
+			in terminal{
+				chmod 3770 <file>
+
+				output{
+					drwxrws--T. 2 <user> <group> 4096 Jan 10 09:08 <file>
+				}
+			}
+
+			## Notice that the special permissions of setgid and sticky bit can be added together, the 2000 permission plus the 1000 permission gives you 3000 for the special permissions. Add this to the basic permissions for the user, group, and others; The owner and group have full access, and others get none.
+		
+			## The uppercase T in the execute permission position for others indicates there is no execute permission for others. However, since multiple users of the group still have access, the sticky permission is effective for the group.
+		}
 	}
 
+	key terms for chapter 13{
+		
+		chgrp
+			Command that is used to change the primary group of a file. Essentially it changes what group is the owner of the FILE.
+			Section 13.2.4 
+		chmod
+			Command that is used to change the mode bits of a FILE. The chmod utility can be used to change the files permissions. For example setting the read, write, and execute bits.
+			Section 13.4 
+		chown
+			Command that is used to change the ownership of a FILE. The chown utility can also be used to change the primary group of a FILE as well.
+			Section 13.2.2 
+		umask
+			Command that sets the calling process's file mode creation mask. The umask utility will set the default permissions for FILEs when they are created.
+			Section 13.7 
+
+
+	}
+
+	-------------- chapter 14 begining ----------------------------------------------------------------------------------------------------------------------------------------------
 
 	users{
 		sudo adduser **name** # create user
