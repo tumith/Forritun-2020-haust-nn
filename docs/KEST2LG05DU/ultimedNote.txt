@@ -21,6 +21,276 @@ MEANING OF THINGS
 ### -r = is most often recursiv
 
 
+chapter 1{
+	key terms{
+		
+		bash
+			Bourne Again SHell - an sh-compatible command language interpreter that executes commands read from the standard input or from a file.
+			Section 1.3.1 
+		ls
+			Command that will list information about files. The current directory is listed by default.
+			Section 1.3.1 
+
+	}
+}
+
+chapter 2{
+	uname{
+
+		Short Option 	Long Option 			Prints
+		-a			 	--all 					All information
+		-s 				--kernel-name  			Kernel name
+		-n 				--node-name 			Network node name
+		-r 				--kernel-release 		Kernel release
+		-v 				--kernel-version 		Kernel version
+		-m 				--machine 				Machine hardware name
+		-p 				--processor 			Processor type or unknown
+		-i 				--hardware-platform 	Hardware platform or unknown
+		-o 				--operating-system 		Operating system
+						--help 					Help information
+						--version 				Version information
+	}
+
+	man{
+		Command 			Function
+		Return (or Enter) 	Go down one line
+		Space 				Go down one page
+		/term 				Search for term
+		n 					Find next search item
+		1G 					Go to the beginning of the page
+		G 					Go to the end of the page
+		h 					Display help
+		q 					Quit man page
+	}
+
+	key terms{
+		
+		Quoting
+			Enclosing special characters in quotes will prevent the shell from interpreting special characters. Double quotes will prevent the shell from interpreting some of these special characters; single quotes prevent the shell from interpreting any special characters.
+			Section 2.3.1.1 
+		echo
+			Echo the STRING(s) to standard output. Useful with scripts.
+			Section 2.3.1.1 
+		man
+			An interface to the on-line reference manuals.
+			Section 2.9 | Section 2.9.1 | Section 2.9.2 | Section 2.9.3 | Section 2.9.4 | Section 2.9.5 | Section 2.9.6 | Section 2.9.6.1 | Section 2.9.6.2 | Section 2.9.6.3 | Section 2.9.6.4 
+		pwd
+			Print the name of the current working directory.
+			Section 2.6 
+		uname
+			Print certain system information such as kernel name, network node hostname, kernel release, kernel version, machine hardware name, processor type, hardware platform, and operating system, depending on options provided.
+			Section 2.5 
+
+	}
+}
+
+chapter 3{
+	key terms{
+		
+		.bash_history
+			File used to store the current history list when the shell is closed.
+			Section 3.4 
+		env
+			Print a list of the current Environment variables or change to an alternate environment.
+			Section 3.2.1 
+		export
+			Makes an assigned variable available to sub-processes.
+			Section 3.2.1 
+		history
+			Print a list of previously executed commands or "re-execute" previously executed commands.
+			Section 3.4 
+		set
+			Display all variables (local and environment).
+			Section 3.2.2 
+		unset
+			Remove one or more variables.
+			Section 3.2.3 
+
+	}
+}
+
+chapter 4{
+	key terms{
+		
+		file globbing
+			The glob function searches for all the pathnames matching pattern according to the rules used by the shell. ( * , ? , [] , )
+			Section 4.1 | Section 4.2 | Section 4.3 | Section 4.4 
+
+	}
+}
+
+chapter 5{
+	key terms{
+
+		cp
+			Command used to copy files and directories. cp will copy a SOURCE to a DEST, or multiple SOURCES to a DIRECTORY.
+			Section 5.5 
+		file
+			Command used to determine the type of file. file tests each argument in an attempt to classify it. There are three sets of tests, preformed in this order: filesystem test, magic tests, and language tests.
+			Section 5.3 
+		ls
+			Command that will list information about files. The current directory is listed by default.
+			| Section 5.2 
+		mkdir
+			Command used to create directories, if they do not already exist.
+			Section 5.8 
+		rm
+			Command used to remove files or directories. By default the rm command will not remove directories.
+			Section 5.7 
+		rmdir
+			Command that is used to remove empty directories in the filesystem.
+			Section 5.9 
+		touch
+			Command used to change the file timestamps. touch will allow a user to update the access and modification times of each FILE to the current time.
+			Section 5.4 
+
+	}
+}
+
+chapter 6{
+	key terms{
+		
+		/etc/updatedb.conf
+			A configuration file for the updatedb utility. In some implementations, updatedb.conf is a shell script that allows more flexibility in defining variables
+			Section 6.3.1 
+		find
+			Command used to search for files in a directory hierarchy. find searches the directory tree rooted at each given file name by evaluating the given the expression from left to right.
+			Section 6.3.2 
+		locate
+			Command used to search for files by name. locate reads one or more databases prepared by the updatedb utility and writes file names matching at least one of the PATTERNs to standard output.
+			Section 6.3.1 
+		type
+			Command that indicates how a name would be interpreted if used as a command. When using the type utility, the path to the command will be displayed.
+			Section 6.3.5 
+		updatedb
+			The updatedb utility creates or updates a database to be used by the locate utility.
+			Section 6.3.1 
+		whereis
+			Command that is used to locate source/binary and manuals sections for specified rules. This will locate binary, source, and manual pages for a command.
+			Section 6.3.3 
+		which
+			Command that returns the pathnames of the files, or links, which would be executed in the current environment. It does this by searching the PATH for executables matching the names of the arguments.
+			Section 6.3.4 
+
+	}
+}
+
+chapter 7{
+	key terms{
+		
+		cat
+			Displays the contents of one or more files (concatenate) to standard output.
+			Section 7.2 
+		cut
+			Command used to extract fields of information from a text file.
+			Section 7.9 
+		head
+			Prints the first ten lines of a file by default. The number of lines can be set to any desired value.
+			Section 7.5 
+		less
+			Pager command used to view file contents one page of data at a time.
+			Section 7.2 
+		nl
+			Prepend a number to the lines of a file incrementing each line by 1 by default.
+			Section 7.4 
+		od
+			Performs an octal dump of data by default. Often used to display the contents of files with non-printable characters.
+			Section 7.12 
+		paste
+			Merge the lines of one or more files, line by line, separating the output by tabs by default.
+			Section 7.7 
+		sed
+			A non-interactive editor that can be used to modify text.
+			Section 7.14 
+		sort
+			Command used to display a file sorted on a specific field of data.
+			Section 7.9 
+		split
+			Command used to take one file and break it into multiple parts. By default it breaks the file up into 1000 line sections.
+			Section 7.3 
+		tail
+			Prints the last ten lines of a file by default. The number of lines can be set to any desired value.
+			Section 7.6 
+		tr
+			Command used to translate one set of characters to another.
+			Section 7.13 
+		uniq
+			Command to remove duplicate lines that are currently consecutive.
+			Section 7.11 
+		wc
+			Print newline, word, and byte counts for each FILE, and a total line if more than one FILE is specified.
+			Section 7.15 
+
+	}
+}
+
+chapter 8{
+	key terms{
+		
+		egrep
+			Command that performs the same function as grep -E. This command has been deprecated, but is around for historical applications.
+			Section 8.3 | Section 8.7 
+		fgrep
+			Command that performs the same function grep -F. This command has been deprecated, but is around for historical applications.
+			Section 8.6 
+		grep
+			Command used ot print lines matching a specific pattern. grep searches the named input FILE for lines containing a match to a given PATTERN.
+			Section 8.1 
+		regex(7)
+			Regular expression. This is a term used to describe a codified method of searching for text ,or other strings in text.
+			Section 8.1 
+		sed
+			A non-interactive editor that can be used to modify text.
+			| Section 8.4 
+
+	}
+}
+
+chapter 9{
+
+	# vi is a editor
+
+	key terms{
+		
+		/, ?
+			This is used to search for text while in command mode. the / is used to start searching. Enter a key term and press enter to begin searching the file for the text entered. If the user would like to search backwards in the document, a ? can be used instead of the /.
+			Section 9.3 
+		EDITOR
+
+			Section 9.6 
+		ZZ, :w!, :q!
+			These keys are used to exit the vi editor from command mode. ZZ is used to save and quit the file. It must be done for each file. :w! will force the writing of the current file. :q! will exit the editor without saving changes to the current file.
+			Section 9.5 
+		d, p, y, dd, yy
+			These are used to copy, replace and paste text when in command mode. d is used to cut one alphabetic word, where as dd is used to cut an entire line of text. y is used to copy one one alphabetic word, where as yy is used to copy and entire line at a time. If a number precedes either dd or yy, this will copy that number of lines. For example if 3dd is typed this will cut 3 lines at a time.
+			Section 9.3 
+		h,j,k,l
+			These keys are used for basic cursor movement in vi when in command mode. h moves left one character, j moves down one line, k moves up one line, and l moves right one character.
+			Section 9.2 
+		i, o, a
+			i, o, and a are used to enter insert mode from command mode. i will allow a user to start inserting text at the current location of the cursor. o will allow a user to start inserting text a line below the current location of the cursor, and a will allow a user to insert text one postion after the current location of the cursor.
+			Section 9.4 
+		vi
+			A screen-oriented text editor originally created for Unix operating systems. vi is also known as a modal editor in which the user must switch modes to create, edit, and search text in a file.
+			Section 9.1 | Section 9.2 | Section 9.3 | Section 9.4 | Section 9.5 
+
+	}
+}
+
+chapter 10{
+	key terms{
+		
+		tee
+			Command used to read from standard input and write to standard output and files.
+			Section 10.6 
+		xargs
+			Command used to build and execute command lines from standard input.
+			Section 10.7 
+
+	}
+}
+
+
 chapter 11{
 	ps
 	{ 
