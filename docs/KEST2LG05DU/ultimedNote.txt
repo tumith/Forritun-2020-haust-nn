@@ -780,12 +780,42 @@ chapter 13 and 14{
 
 
 	links{
-		touch file.txt file1.txt
+		in terminal{
+			touch file.txt file1.txt
+		}
 
+		hardlink{
+			
+			syntax{
+				ln TARGET LINK_NAME
+				## To create hard links, the ln command is used with two arguments (and without the -s option). The first argument is an existing file name to link to, called a target, and the second argument is the new file name to link to the target.
+			}
 
-		ln file.txt hardlink_to_file.txt # using hardlink to link to file.txt
+			in terminal{
+				ln file.txt hardlink_to_file.txt # using hardlink to link to file.txt
+			}
 
-		ln -s file1.txt symlink_to_file1.txt # -s for softlinks this is a symbolicklink
+			filename, incode{
+				passwd : 123
+				shadow : 175
+				group : 144
+				gshadow : 897
+			}
+
+		}
+
+		softlinks{
+			
+			syntax{
+				ln -s TARGET LINK_NAME
+			}
+
+			in terminal{
+				ln -s file1.txt symlink_to_file1.txt # -s for softlinks this is a symbolicklink, Softlinks(symbolicklinks) can be used like shortcuts linking a file to another file
+			}
+
+		}
+
 
 		ls -li # see everything with Inodes numbers
 	}
