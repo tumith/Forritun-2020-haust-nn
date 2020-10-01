@@ -37,30 +37,30 @@ chapter 1{
 chapter 2{
 	uname{
 
-		Short Option 	Long Option 			Prints
-		-a			 	--all 					All information
+		Short Option 			Long Option 			Prints
+		-a			 	--all 				All information
 		-s 				--kernel-name  			Kernel name
 		-n 				--node-name 			Network node name
 		-r 				--kernel-release 		Kernel release
 		-v 				--kernel-version 		Kernel version
-		-m 				--machine 				Machine hardware name
+		-m 				--machine 			Machine hardware name
 		-p 				--processor 			Processor type or unknown
-		-i 				--hardware-platform 	Hardware platform or unknown
+		-i 				--hardware-platform 		Hardware platform or unknown
 		-o 				--operating-system 		Operating system
-						--help 					Help information
-						--version 				Version information
+						--help 				Help information
+						--version 			Version information
 	}
 
 	man{
 		Command 			Function
-		Return (or Enter) 	Go down one line
+		Return (or Enter) 		Go down one line
 		Space 				Go down one page
 		/term 				Search for term
-		n 					Find next search item
-		1G 					Go to the beginning of the page
-		G 					Go to the end of the page
-		h 					Display help
-		q 					Quit man page
+		n 				Find next search item
+		1G 				Go to the beginning of the page
+		G 				Go to the end of the page
+		h 				Display help
+		q 				Quit man page
 	}
 
 	key terms{
@@ -337,14 +337,16 @@ chapter 11{
 
 			# It is also possible to search for processes owned by a specific user by using the -u option
 
-			pgrep -u sysadmin -l # In the example above, the -u and -l options displayed the bash process which has the PID 56 and is owned by the sysadmin user.
+			pgrep -u sysadmin -l # the -u and -l options displayed the bash process which has the PID 56 and is owned by the sysadmin user.
 		}
 
 	}
 
 	watch
 	{
-		// watch [OPTION]... COMMAND \\
+		syntax{ 
+			watch [OPTION]... COMMAND
+		}
 		# The watch command can be use with date for a good test
 		# The watch command can also be used with the ps command to monitor running processes in the shell
 		in terminal {
@@ -803,12 +805,12 @@ chapter 13 and 14{
 
 	User Owner Field{
 		-rwxr-xr-x. 1 root root 133792 Jan  18  2018 /bin/ls
-					  ^^^^
+			      ^^^^
 	}
 
 	Group Owner Field{
 		-rwxr-xr-x. 1 root root 133792 Jan  18  2018 /bin/ls
-						   ^^^^
+				   ^^^^
 	}
 
 	Switching Users{
