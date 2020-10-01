@@ -1,3 +1,5 @@
+import time
+
 """
 1. Útskýrðu stuttlega tímaflækjurnar hér fyrir neðan.  Nefndu dæmi um reiknirit sem hafa eftirfarandi tímaflækjur.
     a. big O er notað í Classify algorithms samkvæmt hvernig keyrslu tímin er og geymslu kröfur stækar eins og input stærð stækar
@@ -28,13 +30,15 @@ for i in range(0, len(listt)):
 
 
 #endur taka til að læra betur
-def bubble_sorta(list1)
-for e, tal in enumerate(list1):
-    try:
-        if list1[e+1] < tal:
-            list1[e] = list1[e+1]
-            list1[e+1] = tal
-            bubble_sorta(list1)
+
+startTime = time.time()
+def bubble_sorta(list1):
+    for e, tal in enumerate(list1):
+        try:
+            if list1[e+1] < tal:
+                list1[e] = list1[e+1]
+                list1[e+1] = tal
+                bubble_sorta(list1)
         except IndexError:
             pass
     return list1
@@ -45,3 +49,17 @@ bubble_sort(list1)
 print("Sorted array: ")
 for e in range(0, len(list1)):
     print(list1[e], end=' ')
+
+print('\n',time.time() - startTime)
+
+
+startTime2 = time.time()
+
+list4 = [10, 5, 2, 4, 1, 3, 6, 9, 8 , 7, 20, 12, 14, 15, 13, 16, 18, 19, 17, 30, 25, 21, 23, 26, 22, 27, 29, 28, 24] 
+print(list4.sort())
+
+print('\n',time.time() - startTime2)
+
+# 3
+def stafró(s):
+    
