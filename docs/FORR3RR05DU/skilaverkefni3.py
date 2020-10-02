@@ -20,7 +20,7 @@ def bubble_sort(listt):
         except IndexError: 
             pass
     return listt 
-  #1 2 3 4 5 6 7 8 9 10 12 13 14 15 16 17 18 19 20 21 22 23 25 26 27 28 29 30
+  # 1 2 3 4 5 6 7 8 9 10 12 13 14 15 16 17 18 19 20 21 22 23 25 26 27 28 29 30
 listt = [10, 5, 2, 4, 1, 3, 6, 9, 8 , 7, 20, 12, 14, 15, 13, 16, 18, 19, 17, 30, 25, 21, 23, 26, 22, 27, 29, 28, 24] 
 bubble_sort(listt) 
   
@@ -61,5 +61,59 @@ print(list4.sort())
 print('\n',time.time() - startTime2)
 
 # 3
-def stafró(s):
+alphabet = []
+print("\nLowercase Alphabets are:")
+for j in range(97,123): 
+        alphabet.append(chr(j))
+print(alphabet)
+
+def stafróf(s):
+    for e, tal in enumerate(alphabet):
+        try:
+            if alphabet[e+1] < tal:
+                alphabet[e] = alphabet[e+1]
+                alphabet[e+1] = tal
+                stafróf(alphabet)
+
+        except IndexError:
+            pass
+    return alphabet
+
+inp8 = str(input("#8 Slá inn orð "))
+stafróf(inp8)
+
+#     if s == "":
+#         print()
+#     else:
+#         print(s[0])
+#         stafróf(s[1:])
+
+# inp8 = str(input("#8 Slá inn orð "))
+# stafróf(inp8)
+
+
+
+
+
+# 4
+
+def fall(L):
+    haesta = max(L)
+    countL =[0]*(haesta+1)
+    result =[0]*len(L)
+
+    for i in L:
+        countL[i] += 1
     
+    summa = 0
+    for i in range(len(countL)):
+        summa += countL[i]
+        countL[L[i]] -= 1
+
+    return result
+
+# Keyrsluforrit...
+L = [7,1,8,2,5,10,8,9,3,6,1]
+print(fall(L))
+
+#5
