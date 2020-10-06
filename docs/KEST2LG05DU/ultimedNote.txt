@@ -1158,19 +1158,157 @@ chapter 15{
 	}
 
 	me read{
-		## The central processing unit (CPU) is the brain of the computer, where the instructions to perform calculations or manipulate data are processed. There are numerous types of CPUs that are able to work with Linux, but the most common is the 64-bit x86_64 type, and decreasingly, the 32-bit x86 type. Both of these types of CPUs are backward compatible with the CPU used in the first IBM Personal Computer (PC), the Intel 8088 CPU.
 
-		uname{
-			Information 		Option 		Example
-			Kernel name 		-s 			Linux
-			Nodename 			-n 			localhost
-			Kernel release 		-r 			4.4.0-72-generic
-			Kernel version 		-v 			#93~14.04.1-Ubuntu SMP Fri Mar 31 15:05:15 UTC 2017
-			Machine hardware 	-m 			x86_64
-			Processor 			-p 			x86_64
-			Hardware platform 	-i 			x86_64
-			Operating System 	-o 			GNU/Linux
+		Central Processing Unit{ 
+			## The central processing unit (CPU) is the brain of the computer, where the instructions to perform calculations or manipulate data are processed. There are numerous types of CPUs that are able to work with Linux, but the most common is the 64-bit x86_64 type, and decreasingly, the 32-bit x86 type. Both of these types of CPUs are backward compatible with the CPU used in the first IBM Personal Computer (PC), the Intel 8088 CPU.
+
+			uname{
+				Information 		Option 		Example
+				Kernel name 		-s 			Linux
+				Nodename 			-n 			localhost
+				Kernel release 		-r 			4.4.0-72-generic
+				Kernel version 		-v 			#93~14.04.1-Ubuntu SMP Fri Mar 31 15:05:15 UTC 2017
+				Machine hardware 	-m 			x86_64
+				Processor 			-p 			x86_64
+				Hardware platform 	-i 			x86_64
+				Operating System 	-o 			GNU/Linux
+			}
+		}
+
+		Random Access Memory{
+		
+			Consider This
+
+			Unit 			Abbreviation 	Value (Bytes)
+			kibibyte 		KiB 			1024
+			mebibyte 		MiB 			10242 = 1,048,576
+			gibibyte 		GiB 			10243 = 1,073,741,824
+			tebibyte 		TiB 			10244 = 1,099,511,627,776
+			exbibyte 		EiB 			10246 = 1,152,921,504,606,846,976
+
+			A typical desktop in the year 2019 has 16 GiB of RAM. That is more than 26000 times the amount of RAM in a fully loaded IBM PC in the year 1981!
+
+			in terminal{
+				cat /proc/meminfo
+
+				output{
+					MemTotal:       132014640 kB
+					MemFree:         67439868 kB
+					MemAvailable:    99487364 kB
+					Buffers:          2116936 kB
+					Cached:          27429740 kB
+					SwapCached:            40 kB
+					Active:          14409408 kB
+					Inactive:        23724500 kB
+					Active(anon):     8400252 kB
+					Inactive(anon):    191680 kB
+					Active(file):     6009156 kB
+					Inactive(file):  23532820 kB
+					Unevictable:            0 kB
+					Mlocked:                0 kB
+					SwapTotal:      134196220 kB
+					SwapFree:       134195752 kB
+				}
+			}
+
+			in terminal{
+				free
+
+				output{
+					              total        used        free      shared  buff/cache   available
+					Mem:         128920       35120       89205           2        4594       93190
+					Swap:        131050         140      130910
+				}
+			}
+		}
+
+		Mass Storage Devices{ 
+			# The Small Computer System Interface (SCSI) is one of the oldest and requires a SCSI controller in the system to control one or more disk drives that connect to it.
+
+			# The Integrated Drive Electronics (IDE) or Parallel Advanced Technology Attachment (PATA) type interface includes the controller directly on each drive and was very popular for hard disks through the 1990s. This type is still used for some optical drive devices today.
+
+			# The most common interface used for internal mass storage devices today is the Serial Advanced Technology Attachment (SATA) type. Each SATA drive is connected directly to the system board by a cable. To configure the primary SATA drive, connect it with a cable to the connector of the system board that is designated as the primary port.
+
+			# For external drives, the Universal Serial Bus (USB) interface is the most common, but there are other standards such as FireWire and Thunderbolt.
+		}
+
+		Firmware{
+			BIOS{
+				# Originally, this firmware was known as the Basic Input/Output System (BIOS), System ROM, or ROM BIOS. BIOS is used to provide basic services, called input and output services before an operating system is loaded, so the user may provide input through the keyboard or see output on a monitor even before the bootloader or an operating system is executed.
+			}
+
+			UEFI{
+				# Recently, computer manufacturers have begun to replace the traditional BIOS with something called the Unified Extensible Firmware Interface (UEFI); however, the functions of UEFI appear so similar to BIOS that many people still refer to the system firmware as BIOS.
+			}
+
+			about BIOS and UEFI{
+				# Both UEFI-based systems and BIOS-based systems provide a proprietary menu program that allows integrated devices to be enabled or disabled. The firmware that is included varies with each system vendor, so, unfortunately, there is no standard way to start this program or standard menu item for enabling or disabling devices.
+			}
+
+			Secure Boot and CSM{
+				‌⁠​​⁠​If a system has UEFI firmware, then it may be more challenging to boot the Linux operating system due to a feature called Secure Boot. If Secure Boot is enabled, then the bootloader must be cryptographically signed by a digital key that is recognized by the firmware. If the bootloader is not properly signed, then booting may still be possible by disabling Secure Boot in the firmware settings, in favor of the Compatibility Support Module (CSM).
+			}
+		}
+
+		Hardware Resources{ 
+			IO Ports{
+				# Memory addresses that allow for communication with hardware devices
+
+				in terminal{
+					cat /proc/ioports
+
+					output{
+						0000-0cf7 : PCI Bus 0000:00
+							0000-001f : dma1
+							0020-0021 : pic1
+							0040-0043 : timer0
+							0050-0053 : timer1
+							0060-0060 : keyboard
+							0064-0064 : keyboard
+					}
+				}
+			}
+
+			IO Memory{
+				#  A section or location that acts much like the RAM that is presented to the processor via the system bus. These are used to pass and store data as well as for access to devices on the system
+				
+				in terminal{
+					cat /proc/iomem
+
+					output{
+						00010000-0009ffff : System RAM
+						000a0000-000bffff : PCI Bus 0000:00
+						000c0000-000c7fff : Video ROM
+						000c8000-000cdfff : Adapter ROM
+						000f0000-000fffff : System ROM
+						00100000-be777fff : System RAM
+							06000000-0680bdb2 : Kernel code
+							0680bdb3-06f45abf : Kernel data
+					}
+				}
+			}
+
+			Interrupt Requests (IRQ){
+				#  An interrupt is a hardware signal that pauses or stops a running program so that the interrupt handler can switch to running another program, or send and receive data. There are a set of commonly-defined interrupts called IRQ’s that map to common interfaces, such as the system timer, keyboard controller, serial and parallel ports, and floppy controllers.
+			}
+
+			Direct Memory Access (DMA){
+				# A method by which particular hardware items in the system can directly access RAM, without going through the CPU. This speeds up access, as the CPU would otherwise be fully tasked during such access, making it unavailable for other tasks for the duration.
+
+				in terminal{
+					cat /proc/dma
+
+					output{
+						4: cascade
+					}
+				}
+			}
+
+			## Note that, with the exception of interrupt requests, these resources cannot be shared between devices. Also, keep in mind that administrators rarely need to view this data on modern Linux systems as the configuration of devices is almost always transparent and automatic.
+		}
+
+		Viewing Hardware{
+			## Modern computers typically use the Peripheral Component Interconnect Express (PCIe) bus to connect components inside the computer. For example, video, sound, network, and disk controllers are normally found on the PCIe bus.
 		}
 	}
-
 }

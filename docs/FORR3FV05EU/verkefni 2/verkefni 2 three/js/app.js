@@ -67,7 +67,7 @@ function createMaterials() {
 
   detail.color.convertSRGBToLinear();
 
-  return {
+  return {*
     body,
     detail,
     noseColor
