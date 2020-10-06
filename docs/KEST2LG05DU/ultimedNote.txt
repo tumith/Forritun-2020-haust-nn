@@ -1309,6 +1309,138 @@ chapter 15{
 
 		Viewing Hardware{
 			## Modern computers typically use the Peripheral Component Interconnect Express (PCIe) bus to connect components inside the computer. For example, video, sound, network, and disk controllers are normally found on the PCIe bus.
+			
+			## A bus is not only used to refer to actual physical connections, but also software components designed to connect programs and certain communications protocols. Components are attached with a type of bus and communicate through it at high rates of speed.
+		
+			internal and external bus (ISA, SCSI, USB){
+				Buses can be alternatively grouped into internal and external bus types. Internal buses are considered to be inside the actual computer, while external or “expansion” buses are used to attach external devices to the computer. Good examples of internal buses are the aforementioned PCIe bus, the older Industry Standard Architecture (ISA) bus, and the very popular Small Computer Systems Interface (SCSI) bus. An example of an external or expansion bus type would be the most universally available Universal Serial Bus (USB) bus.
+			}
+
+			ls???{
+				# First among these is the lspci command, designed to show the user the PCI buses and devices attached to them.
+				# For viewing external devices, the lsusb command will show those that are specifically connected to the Universal Serial Bus (USB).
+			}
+
+			usb-devices{
+				Another tool for viewing details about USB devices connected to the system is the usb-devices command. This is a script, which when executed will display information about the USB device that can otherwise be found in the /sys or /proc directories, including; the USB device number, vendor, port and more:
+
+				in terminal{
+					usb-devices | tail -n 15
+
+					output{
+						S:  Manufacturer=Avocent
+						S:  Product=USB Composite Device-0
+						S:  SerialNumber=20120430
+						C:  #Ifs= 2 Cfg#= 1 Atr=c0 MxPwr=2mA
+						I:  If#= 0 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=01 Prot=01 Driver=usbhid
+						I:  If#= 1 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=01 Prot=02 Driver=usbhid
+
+						T:  Bus=06 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=12  MxCh= 2
+						D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+						P:  Vendor=1d6b ProdID=0001 Rev=04.04
+						S:  Manufacturer=Linux 4.4.0-72-generic uhci_hcd
+						S:  Product=UHCI Host Controller
+						S:  SerialNumber=0000:00:1d.1
+						C:  #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=0mA
+						I:  If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+					}
+				}
+			}
+
+			### If the user requires more information than the lspci and lsusb commands show normally, simply append a -v option to either command and a great deal more information will be shown; taking the output from one line per item to a stanza-based output where each item is shown with multiple details.
+
+			### Finally, if a user has an issue with a component and is able to see that component mentioned in the lspci -v output, they can get more information about the malfunctioning component by referring to the multiple digit vendor and device code that prefaces the stanza for each device. For example, to get more information about the IDE interface from the machine above, the user can run the lspci command with the -v and -s options followed by the vendor and device code as a parameter. The -s option will allow for a domain to be specified which will display information solely about devices in that domain
+
+			### To isolate the details of a specific USB device, find the vendor and device code in the output of the lsusb command, then use the lsusb command again, this time with the -v and -d options to get the isolated details of a device. The -d option will allow for a vendor or product ID to be specified, which will only display devices with that number.
+		}
+
+		Hardware Subsystems{
+			tree{
+				For example, in the /proc directory, you can use the tree command to show a hierarchical tree of the files and directories that are contained there. However, the listing will be many pages long, so using the less command will be of great benefit in scrolling up and down and looking at the output.
+
+				in terminal{
+					tree /proc | less
+
+					output{
+						/proc
+						|-- 1
+						|   |-- attr
+						|   |   |-- current
+						|   |   |-- exec
+						|   |   |-- fscreate
+						|   |   |-- keycreate
+						|   |   |-- prev
+						|   |   `-- sockcreate
+						|   |-- autogroup
+						|   |-- auxv
+						|   |-- cgroup
+						|   |-- clear_refs
+						|   |-- cmdline
+						|   |-- comm
+						|   |-- coredump_filter
+						|   |-- cpuset
+						|   |-- cwd -> [Error\ reading\ symbolic\ link\ information]
+						|   |-- environ
+						|   |-- exe -> [Error\ reading\ symbolic\ link\ information]
+						|   |-- fd [error opening dir]
+						|   |-- fdinfo [error opening dir]
+						|   |-- gid_map
+						:
+					}
+				}
+			}
+
+			lshal{
+				To view the list of devices and their attributes that have been stored by hald, execute the lshal command. The lshal command's output will likely contain thousands of lines of text. To see information about specific devices, make use of the grep command, as shown in the following example:
+
+				in terminal{
+					lshal | grep cdrom | grep true
+
+					output{ // can be different
+						storage.cdrom.dvd = true   (bool)
+						storage.cdrom.mrw = true   (bool)
+						storage.cdrom.mrw_w = true   (bool)
+						storage.cdrom.support_media_changed = true   (bool)
+						storage.cdrom.support_multisession = true   (bool)
+					}
+				}
+			}
+
+			D-Bus{
+				# Finally, when programs want information about devices, they are able to query hald by using D-Bus.
+
+				# D-Bus is a method of allowing inter-process communications, primarily the communications between components in the Linux Desktop environments, KDE and GNOME. Without D-Bus, desktop environments will communicate between components with many separate processes, each requiring its own one-to-one communication with other components. This produces a confusing communications environment and can contribute to inefficiency and a lack of reliability and instability in the graphics subsystem.
+
+				# D-Bus is a software bus that allows individual and groups of processes to communicate on a single virtual bus or channel, a feature called Interprocess Communication (IPC).
+			}
+		}
+
+		key terms{
+			
+			/dev/
+				Hardware devices are made available through special files under the /dev directory.
+				Section 15.6 
+			/proc/
+				The process information pseudo-filesystem
+				Section 15.6 
+			/sys/
+				The mount point for sysfs providing a set of virtual files by exporting information about various kernel subsystems, hardware devices and associated device drivers from the kernel's device model to user space.
+				Section 15.6 
+			lsmod
+				Prints the contents of the /proc/modules file
+				Section 15.7 
+			lspci
+				Prints detailed information about all PCI buses and devices in the system
+				Section 15.5 
+			lsusb
+				Prints detailed information about all USB buses and devices in the system
+				Section 15.5 
+			modprobe
+				Used to add a loadable kernel module (LKM) to the Linux kernel or to remove an LKM from the kernel
+				Section 15.7 
+			swap space
+				Used when the amount of physical memory (RAM) is full. If the system needs more memory resources and the RAM is full, inactive pages in memory are moved to the swap space.
+				Section 15.2.2 
 		}
 	}
 }
