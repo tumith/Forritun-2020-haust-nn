@@ -60,11 +60,17 @@ function createMaterials() {
     flatShading: true
   });
 
+  const noseColor = new THREE.MeshStandardMaterial({
+    color: 0xFF9900,
+    flatShading: true
+  })
+
   detail.color.convertSRGBToLinear();
 
   return {
     body,
-    detail
+    detail,
+    noseColor
   };
 }
 
@@ -98,7 +104,7 @@ function createMeshes() {
   const materials = createMaterials();
   const geometries = createGeometries();
 
-  const nose = new THREE.Mesh(geometries.nose, materials.body);
+  const nose = new THREE.Mesh(geometries.nose, materials.noseColor);
   nose.rotation.z = Math.PI / 2;
   nose.position.x = -1;
 

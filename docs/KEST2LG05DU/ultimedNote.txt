@@ -1092,3 +1092,85 @@ chapter 13 and 14{
 		ls -li # see everything with Inodes numbers
 	}
 }
+
+
+chapter 15{
+	in class{ 
+		chapter 15: hardware configuration
+
+			1- Core hardware
+
+			CPU central processing unit
+
+			Ram randon access memory
+
+			Storage like hard drives, CDROMs, and DVDs
+
+			Display and keyboard
+
+
+
+			2- generating CPU info
+
+			lscpu //informatino about cpu
+
+			uname -m //cpu architecture
+
+			cat /proc/cpuinfo //displays information about the cpu
+
+
+
+			3- Generating Memory info
+
+
+
+			cat /proc/meminfo
+
+			free
+
+
+
+			4- Generating hard disk info
+
+			df -h
+
+			sudo fdisk -l
+
+
+
+			5- generaing PCI and USB info
+
+			lspci
+
+			lsusb
+
+
+
+			6- inserting, removing and updating Modules in Linux
+
+			sudo lsmod // list all the modules
+
+			sudo modinfo <Module Name>
+
+			sudo rmmod <path to the module>
+
+			sudo insmod <path of the module>
+	}
+
+	me read{
+		## The central processing unit (CPU) is the brain of the computer, where the instructions to perform calculations or manipulate data are processed. There are numerous types of CPUs that are able to work with Linux, but the most common is the 64-bit x86_64 type, and decreasingly, the 32-bit x86 type. Both of these types of CPUs are backward compatible with the CPU used in the first IBM Personal Computer (PC), the Intel 8088 CPU.
+
+		uname{
+			Information 		Option 		Example
+			Kernel name 		-s 			Linux
+			Nodename 			-n 			localhost
+			Kernel release 		-r 			4.4.0-72-generic
+			Kernel version 		-v 			#93~14.04.1-Ubuntu SMP Fri Mar 31 15:05:15 UTC 2017
+			Machine hardware 	-m 			x86_64
+			Processor 			-p 			x86_64
+			Hardware platform 	-i 			x86_64
+			Operating System 	-o 			GNU/Linux
+		}
+	}
+
+}

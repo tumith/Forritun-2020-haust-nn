@@ -61,26 +61,23 @@ print(list4.sort())
 print('\n',time.time() - startTime2)
 
 # 3
-alphabet = []
-print("\nLowercase Alphabets are:")
-for j in range(97,123): 
-        alphabet.append(chr(j))
-print(alphabet)
-
 def stafróf(s):
-    for e, tal in enumerate(alphabet):
+    ss = list(s)
+    for e, tal in enumerate(ss):
         try:
-            if alphabet[e+1] < tal:
-                alphabet[e] = alphabet[e+1]
-                alphabet[e+1] = tal
-                stafróf(alphabet)
+            if ss[e+1] < tal:
+                ss[e] = ss[e+1]
+                ss[e+1] = tal
+                stafróf(s)
 
         except IndexError:
             pass
-    return alphabet
+    return ss
 
-inp8 = str(input("#8 Slá inn orð "))
-stafróf(inp8)
+# þarf að nota split 
+
+inp3 = str(input("# 3 Slá inn orð "))
+print(stafróf(inp3))
 
 #     if s == "":
 #         print()
@@ -96,19 +93,19 @@ stafróf(inp8)
 
 
 # 4
-
+print('\n', '# 4')
 def fall(L):
     haesta = max(L)
     countL =[0]*(haesta+1)
     result =[0]*len(L)
 
-    for i in L:
-        countL[i] += 1
+    for i in L: # á meðan i inn í L 
+        countL[i] += 1 # fyrst er addað vinstra valueið í hægra og svo add svarinu í vinstra valueið
     
     summa = 0
-    for i in range(len(countL)):
-        summa += countL[i]
-        countL[L[i]] -= 1
+    for i in range(len(countL)):  # i inn í range með leingdina af countL
+        summa += countL[i]  # fyrst er addað vinstra valueið í hægra og svo add svarinu í vinstra valueið
+        countL[L[i]] -= 1  # fyrst er mínusað vinstra valueið í hægra og svo add svarinu í vinstra valueið
 
     return result
 
@@ -116,4 +113,19 @@ def fall(L):
 L = [7,1,8,2,5,10,8,9,3,6,1]
 print(fall(L))
 
+# Svo flækju stigið er O(1) + O(1) + O(1) + O(n) + O(n) sem þíðir að svarið er big O(n)
+
 #5
+def insertFall(listi, n):
+    for i in range(len(listi)):
+        if listi[i] > n:
+            index = i
+            break
+    
+    listi = listi[:i] + [n] + listi[i:]
+    return listi
+
+listi = [2.3,3,5,6,7,9,10]
+
+inp5 = int(input("#5 Slá inn orð "))
+print(insertFall(listi,inp5))
