@@ -1,5 +1,5 @@
 import time
-
+import random
 """
 1. Útskýrðu stuttlega tímaflækjurnar hér fyrir neðan.  Nefndu dæmi um reiknirit sem hafa eftirfarandi tímaflækjur.
     a. big O er notað í Classify algorithms samkvæmt hvernig keyrslu tímin er og geymslu kröfur stækar eins og input stærð stækar
@@ -32,6 +32,16 @@ for i in range(0, len(listt)):
 #endur taka til að læra betur
 
 startTime = time.time()
+
+list1 = []
+b = 0
+m = 1
+while(b < 1000000):
+    list1.append(m)
+    random.shuffle(list1)
+    m += 1
+    b += 1
+
 def bubble_sorta(list1):
     for e, tal in enumerate(list1):
         try:
@@ -43,7 +53,7 @@ def bubble_sorta(list1):
             pass
     return list1
 
-list1 = [10, 5, 2, 4, 1, 3, 6, 9, 8 , 7, 20, 12, 14, 15, 13, 16, 18, 19, 17, 30, 25, 21, 23, 26, 22, 27, 29, 28, 24] 
+
 bubble_sort(list1)
 
 print("Sorted array: ")
@@ -60,24 +70,26 @@ print(list4.sort())
 
 print('\n',time.time() - startTime2)
 
-# 3
-def stafróf(s):
-    ss = list(s)
+
+
+# fallið tekur inn lista en ekki streng og skilar lista en ekki streng
+def stafróf(ss):
     for e, tal in enumerate(ss):
         try:
             if ss[e+1] < tal:
                 ss[e] = ss[e+1]
                 ss[e+1] = tal
-                stafróf(s)
-
+                stafróf(ss)
+ 
         except IndexError:
             pass
+ 
     return ss
-
-# þarf að nota split 
-
-inp3 = str(input("# 3 Slá inn orð "))
-print(stafróf(inp3))
+ 
+inp3 = input("# 3 Slá inn orð ")
+texti = stafróf(list(inp3)) # breytum streng í lista fyrir fallið...
+ 
+print(''.join(texti)) # breytum lista í streng fyrir output...
 
 #     if s == "":
 #         print()
@@ -125,7 +137,7 @@ def insertFall(listi, n):
     listi = listi[:i] + [n] + listi[i:]
     return listi
 
-listi = [2.3,3,5,6,7,9,10]
+listi = [2,3,5,6,7,9,10]
 
 inp5 = int(input("#5 Slá inn orð "))
 print(insertFall(listi,inp5))
