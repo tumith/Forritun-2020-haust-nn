@@ -1444,3 +1444,34 @@ chapter 15{
 		}
 	}
 }
+
+chapter 16{
+	in class{
+		Basic Input Output System (BIOS)
+				-The first program 
+				-runs from ROM
+				-OS independent
+		Power over self-test (POST)
+				-Power-on self-test core hardware check 
+		Boot an OS from a Storage device
+				-Proceed through the list until it finds a MBR 
+		(MBR) Master Boot Record
+				-First sector of the drive normally 512MB of storage space
+				- Bootloader may reside in the MBR
+				-And/or may reside elsewhere
+		MBR runs the bootloader
+				-Bootloader loads the OS
+				-May be automatic or prompt for options
+				-LILO, GRUB, GRUB2
+				May create an initrd image initial ramdisk
+				-“Initial ramdisk”
+				-A RAM based file system
+		Bootloader loads the kernel
+				-/boot/vmlinuz
+				-the kernel may be a compressed file
+		Gets the hardware running
+				-Linux run command
+				File system is mounted
+				-kernel runs init or systemd
+	}
+}

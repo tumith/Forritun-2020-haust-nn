@@ -5,6 +5,9 @@ let controls;
 let renderer;
 let scene;
 
+const mixers = []; 
+const clock =  new THREE.Clock();
+
 function init() {
   container = document.querySelector("#scene-container");
 
@@ -18,8 +21,10 @@ function init() {
   createRenderer();
 
   renderer.setAnimationLoop(() => {
+
     update();
     render();
+
   });
 }
 
@@ -41,33 +46,46 @@ function createLights() {
   const ambientLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 5);
 
   const mainLight = new THREE.DirectionalLight(0xffffff, 5);
-  mainLight.position.set(10, 10, 10);
+  mainLight.position.set(50, 50, 50);
 
   scene.add(ambientLight, mainLight);
 }
 
+
+
 function createMaterials() {
-  const body = new THREE.MeshStandardMaterial({
-    color: 0xffffff, // red
-    flatShading: true
-  });
+	const loader = new THREE.TextureLoader();
+	const body = new THREE.MeshStandardMaterial({
+		map: loader.load('../textures/Snow Seamless Texture #5163.jpg'),
+		// flatShading: true
+	});
 
-  // just as with textures, we need to put colors into linear color space
-  body.color.convertSRGBToLinear();
+	// just as with textures, we need to put colors into linear color space
+	body.color.convertSRGBToLinear();
 
-  const detail = new THREE.MeshStandardMaterial({
-    color: 0x333333, // darkgrey
-    flatShading: true
-  });
+	const detail = new THREE.MeshStandardMaterial({
+		color: 0x333333, // darkgrey
+		flatShading: true
+	});
 
-  const noseColor = new THREE.MeshStandardMaterial({
-    color: 0xFF9900,
-    flatShading: true
-  })
+	const noseColor = new THREE.MeshStandardMaterial({
+		color: 0xFF9900,
+		flatShading: true
+	});
+
+	let clickerinn = 2
+
+	document.addEventListener('click', function(e){
+		console.log(noseColor.color.g += 2)
+		clickerinn = clickerinn + 2
+		if(clickerinn > 100){
+			noseColor.color.b = 2
+		}
+  	});
 
   detail.color.convertSRGBToLinear();
 
-  return {*
+  return {
     body,
     detail,
     noseColor
@@ -153,18 +171,19 @@ function loadModels() {
     // A reusable function to set up the models. We're passing in a position parameter
     // so that they can be individually placed around the scene
     const onLoad = (gltf, position) => {
-      const model = gltf.scene.children[0];
-      model.position.copy(position);
+
+      const model = gltf.scene.children[ 0 ];
+      model.position.copy( position );
   
-      const animation = gltf.animations[0];
+      const animation = gltf.animations[ 0 ];
   
-      const mixer = new THREE.AnimationMixer(model);
-      mixers.push(mixer);
+      const mixer = new THREE.AnimationMixer( model );
+      mixers.push( mixer );
   
-      const action = mixer.clipAction(animation);
+      const action = mixer.clipAction( animation );
       action.play();
   
-      scene.add(model);
+      scene.add( model );
     };
   
     // the loader will report the loading progress to this function
@@ -172,19 +191,12 @@ function loadModels() {
   
     // the loader will send any error messages to this function, and we'll log
     // them to to console
-    const onError = (errorMessage) => {
-      console.log(errorMessage);
-    };
+    const onError = (errorMessage) => {console.log( errorMessage ); };
   
     // load the first model. Each model is loaded asynchronously,
     // so don't make any assumption about which one will finish loading first
     const flagPosition = new THREE.Vector3(4, 0, -2.5);
-    loader.load(
-      "uploads_files_2174702_Weaving+Flag.glb/Weaving Flag.glb",
-      (gltf) => onLoad(gltf, flagPosition),
-      onProgress,
-      onError
-    );
+    loader.load('models/Weaving Flag.glb', gltf => onLoad( gltf, flagPosition ), onProgress, onError );
   }
 
 function createRenderer() {
@@ -201,7 +213,17 @@ function createRenderer() {
   container.appendChild(renderer.domElement);
 }
 
-function update() {}
+function update() {
+  const delta = clock.getDelta();
+
+  for ( const mixer of mixers ) {
+
+    mixer.update( delta );
+
+  }
+
+  render();
+}
 
 function render() {
   renderer.render(scene, camera);

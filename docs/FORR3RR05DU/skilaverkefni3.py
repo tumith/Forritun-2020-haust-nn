@@ -50,7 +50,7 @@ def bubble_sorta(arr):
 b = 0
 arr = []
 m = 1
-while(b < 1000):
+while(b < 10000):
     arr.append(m)
     random.shuffle(arr)
     m += 1
