@@ -1640,11 +1640,364 @@ Chapter 17: Bootloaders{
 	}
 }
 
-chapter 18: Runlevels
-	0 shuts down the system
-	1 Single user mode for maintenance
-	2 debian ditros multiuser mode with GUI
-	3 Redhat Multiuser mode with text
-	4 Undefined
-	5 Red hat runlevel 3 with GUI
-	6 Reboot the system
+chapter 18: Runlevels{
+	in class{
+		0 shuts down the system
+		1 Single user mode for maintenance
+		2 debian ditros multiuser mode with GUI
+		3 Redhat Multiuser mode with text
+		4 Undefined
+		5 Red hat runlevel 3 with GUI
+		6 Reboot the system
+	}
+	
+	The wall Command{
+		# There are instances when the notification may not require the imminent shutdown of the system. This is what the wall command is used for. The wall command can be used to display a message or the contents of a file to all users on the system. For example, the following message is being piped to the wall command from the echo command
+		
+		in terminal{
+			echo -e "The server will be offline on Saturday from\n6:00PM to 12:00PM for scheduled maintenance" | wall Broadcast message from sysadmin@localhost (console) (Wed May 29 22:13:59 2019):
+
+			output{
+				The server will be offline on Saturday from
+				6:00PM to 12:00PM for scheduled maintenance
+			}
+		}
+	}
+
+	Managing System Services{
+		# As the administrator of a system, it is possible to control which services will be provided by the various daemons (processes that run in the background of the system). If you want to test services out or have them temporarily enabled or disabled, then you could manually manage them.
+		# Typically, administrators will want to automate the management of services, so when the system is taken to a specific runlevel or target state, they will know what services should automatically be available.
+		# To manually manage the state of a service, such as a web server, use the appropriate script in the /etc/rc.d/init.d directory to start, stop, or otherwise change the state of the web server. To manage a service with these scripts, run the script with an argument which specifies what the script is supposed to do.
+		# For example, on a Red Hat Enterprise Linux distribution, the script to manage the web server has a path name of /etc/rc.d/init.d/httpd. So, to manually start the web server, you would execute the following command as the root user:
+
+		in terminal{
+			[root@localhost ~]# /etc/rc.d/init.d/httpd start
+			Starting httpd:
+
+			---------------------------------------------------
+
+			[root@localhost ~]# /etc/rc.d/init.d/httpd stop
+			Stopping httpd:
+
+			-----------------------------------------------------
+
+			[root@localhost ~]# service httpd start
+			[root@localhost ~]# service httpd stop
+
+			-------------------------------------------------------
+
+			[root@localhost ~]# service httpd restart
+
+			-----------------------------------------------------
+
+			[root@localhost ~]# /etc/init.d/httpd
+			Usage: httpd {start|stop|restart|conderestart|try-restart|force-reload|reload|status|fullst
+			atus|graceful|help|configtest}
+		}
+
+		Argument 		Function
+		start 			If the service is not running, then attempt to start it.
+		stop 			If the service is running, then attempt to stop it.
+		restart 		Stop and then start the service over. If a major configuration change is made to a service, it may have to be restarted to make the change effective.
+		condrestart 	Restart the service on the condition that it is currently running.
+		try-restart 	Same as condrestart.
+		reload 			Read and load the configuration for the service. Reloading the configuration file of a service is normally a less disruptive way to make configuration changes to a service effective, but may not be successful for major changes.
+		status 			Show whether the service is stopped or the process id (PID) if the service is running. Note: It is also possible to use the service --status-all command to see the status of all daemons.
+		fullstatus 		For the Apache web server, displays the URL /server-status.
+		graceful 		For the Apache web server, it gracefully restarts the server. If the server is not running, then it is started. Unlike a normal restart, open connections are not aborted.
+		help 			Displays the usage of the script.
+		configtest 		Checks the configuration files for correctness. For some services, if the configuration file is modified, then this can be used to verify that the changes have no syntax errors.
+	}
+
+	Runlevel Directories{
+		# The number in the directory name represents the runlevel that it manages; for example, rc0.d is for runlevel 0 and rc1.d is for runlevel 1. To demonstrate, the directories that are used to manage which services will be automatically started or stopped at different runlevels in our VM can be found in the /etc directory. To display these directories, execute the following command:
+		
+		in terminal{
+			sysadmin@localhost:~$ cd /etc
+			sysadmin@localhost:/etc$ ls -d rc*
+			rc0.d  rc1.d  rc2.d  rc3.d  rc4.d  rc5.d  rc6.d  rcS.d
+		}
+
+		# So, what number is supposed to be provided to a specific script for S and K? Look at the script itself for the line that contains chkconfig:
+
+		in terminal{
+			[root@localhost ~]# grep chkconfig /etc/init.d/httpd
+			# chkconfig: - 85 15
+		}
+
+		# The second to last number 85 of the chkconfig line is the S number to place on this script, the last number 15 is the K number.
+	}
+
+	The chkconfig Command{
+		# To view all the services that are set to start or stop automatically, the administrator can execute the chkconfig --list command and the output would look something like the following (although there would be many more lines of output):
+
+		in terminal{
+			[root@localhost ~]# chkconfig --list
+			auditd          0:off   1:off   2:on    3:on    4:on    5:on    6:off
+			crond           0:off   1:off   2:on    3:on    4:on    5:on    6:off
+			httpd           0:off   1:off   2:off   3:off   4:off   5:off   6:off
+			iptables        0:off   1:off   2:on    3:on    4:on    5:on    6:off
+			netconsole      0:off   1:off   2:off   3:off   4:off   5:off   6:off
+			netfs           0:off   1:off   2:off   3:on    4:on    5:on    6:off
+			network         0:off   1:off   2:on    3:on    4:on    5:on    6:off
+			quota_nld       0:off   1:off   2:off   3:off   4:off   5:off   6:off
+			rdisc           0:off   1:off   2:off   3:off   4:off   5:off   6:off
+			restorecond     0:off   1:off   2:off   3:off   4:off   5:off   6:off
+			rsyslog         0:off   1:off   2:on    3:on    4:on    5:on    6:off
+			saslauthd       0:off   1:off   2:off   3:off   4:off   5:off   6:off
+			sendmail        0:off   1:off   2:on    3:on    4:on    5:on    6:off
+			sshd            0:off   1:off   2:on    3:on    4:on    5:on    6:off
+			udev-post       0:off   1:on    2:on    3:on    4:on    5:on    6:off
+		}
+
+		# To view a single service's settings, use the chkconfig --list SCRIPT command where SCRIPT is the name of a script file found in the /etc/rc.d/init.d directory. For example, to view the web server script, execute:
+
+		in terminal{
+			[root@localhost ~]# chkconfig --list httpd
+			httpd            0:off   1:off   2:off    3:off    4:off    5:off    6:off
+		}
+
+		# To enable the service to start for most runlevels, use the chkconfig SERVICE on command, where the SERVICE is the name of a script file found in the /etc/rc.d/init.d directory. Thus, to enable the web server to start at most runlevels, execute the chkconfig httpd on command:
+
+		in terminal{
+			[root@localhost ~]# chkconfig httpd on
+			[root@localhost ~]# chkconfig --list httpd
+			httpd            0:off   1:off   2:on    3:on    4:on    5:on    6:off
+		}
+	}
+
+	The /etc/init Directory{
+		# For Debian and its derivatives (like Ubuntu), know that the runlevels that are used vary slightly from those defined by the Linux Standard Base 4.1. Runlevels 0, 1, and 6 are the same as the standard. However, runlevel 2 is considered the default runlevel; this runlevel is configured for multiple users with the GUI running, much like the standard runlevel five. Runlevels 3, 4, and 5 are initially the same as runlevel 2.
+		
+		# If an administrator wants to change the runlevels of a service, the configuration file for that service can be modified in the /etc/init directory. For example, in an installation of Ubuntu which includes the Apache web server, this directory normally contains the /etc/init/apache2.conf Upstart configuration file. Within the /etc/init/apache2.conf file should be two lines which define the runlevels to start and stop the server:
+
+		in terminal{
+
+			start on runlevel [2345]
+			stop on runlevel [!2345]
+			
+			--------------------------------
+
+			# In this case, the service would be started up in runlevels 2 through 5 and would be stopped in runlevels that are not 2 through 5 because the ! character indicates "not these". To change the service to only be available in runlevels 2 and 3, change the lines to be like the following:
+
+			start on runlevel [23]
+			stop on runlevel [!23]
+		}
+
+		# To disable a service without uninstalling it, an override file can be created in the /etc/init directory. This file should have the same name as the service configuration file, but ending in .override instead of .conf. This is the preferred technique over commenting out the "start on" lines.
+
+		# The contents of the .override file should simply be the word manual, which means that the service will ignore any "start on" lines from the configuration file. For example, to override the apache2 configuration file and disable the web server, execute the following command:
+
+		in terminal{
+			[sysadmin@localhost ~]$ sudo 'echo manual > /etc/init/apache2.override'
+		}
+	}
+
+	The systemctl Command{
+		# The systemctl command is used in systems that have systemd as a replacement for the traditional init process. This one command can be used to manually control the state of services, enable or disable automatic starting of services, as well as change system targets.
+		# The systemctl command looks in the /usr/lib/systemd directory for information about which symbolic link enables a specific service. This directory is where a service’s files are originally placed when it is installed.
+		# It is also possible to edit service files in order to modify the service; however, these changes should be made to service files found in the /etc/systemd directory instead.
+
+		# To manually control the state of a service, use the systemctl command to start, stop, or check the status of that service. For example, to start a service like the web server, execute the following:
+
+		in terminal{
+			systemctl start httpd.service
+
+			-----------------------------
+
+			# To shut down the service:
+
+			systemctl stop httpd.service
+
+			-----------------------------
+
+			# To check the state of the service:
+
+			systemctl status httpd.service
+
+			### To view the status of all services use -a or --all
+
+			-------------------------------------------------------
+
+			# To configure a service to start automatically, execute the following:
+
+			systemctl enable httpd.service
+
+			---------------------------------------------------------------------------
+
+			# To configure a service not to start automatically, execute the following:
+
+			systemctl disable httpd.service
+
+			----------------------------------------------------------------------------
+
+			# As previously mentioned, it is possible to change to a different runlevel with the systemctl command:
+
+			systemctl isolate DESIRED.TARGET
+
+			---------------------------------------------------------------------------------------------------------
+
+			# The systemctl command can also manage the low or no power states of the system with command lines such as:
+
+			systemctl hibernate
+			systemctl suspend
+			systemctl poweroff
+			systemctl reboot
+		}
+
+		# Similar to the chkconfig --list command, all the services that are supposed to be enabled for a specific target within systemd can be viewed by using a systemctl list-dependencies command for that target, such as:
+		# The partial output below shows each level of wanted services below a target and the dependencies between each target indented. You see services like atieventsd.service and gdm.service are wanted by the graphical.target.
+		# Also, the graphical.target depends on the multi-user.target and the multi-user.target wants the services abrt-ccpp.service and abrt-oops.service.
+
+		in terminal{
+			[root@localhost ~]# systemctl list-dependencies graphical.target
+			graphical.target
+			├─atieventsd.service
+			├─gdm.service
+			├─jexec.service
+			├─systemd-readahead-collect.service
+			├─systemd-readahead-replay.service
+			├─systemd-update-utmp-runlevel.service
+			├─abrt-ccps.service
+			├─abrt-oops.service
+		}
+
+		## Consider This{
+			Because there are three different types of boot systems, traditional init, Upstart and systemd, the logical question is, "Which one does my system use?" The easy answer to this question is to check for the existence of two directories: the /etc/init and the /etc/systemd directory.
+			If your system has a /etc/init directory, then your system is using Upstart. If your system has a /etc/systemd directory, then your system is using systemd. Otherwise, your system is using traditional init.
+		}
+	}
+
+	Boot Target{
+		# Many modern systems use systemd rather than init for setting boot targets. The following table shows the runlevel equivalents for boot targets.
+
+		Runlevel 		Purpose 																		systemd Target
+		0 				Halt or shut off the system 													poweroff.target
+		1 				Single-user mode for administrative tasks 										rescue.target
+		2 				Multi-user mode without configured network interfaces or network services 		multi-user.target
+		3 				Normal startup of the system 													multi-user.target
+		4 				User-definable 																	multi-user.target
+		5 				Start the system normally with a graphical display manager 						graphical.target
+		6 				Restart the system 																reboot.target
+	}
+
+	acpid{
+		# Linux systems use the Advanced Configuration and Power Interface (ACPI) event daemon acpid to notify user-space programs of ACPI events. The ACPI allows the kernel to configure hardware components and manage the system’s power settings, such as battery status monitoring, temperature, and more.
+		# One example of using acpid for power management would be having the system shut down after the user presses the power button. On modern systems, acpid is normally started as a background process during bootup and opens an event file in the /proc/acpi directory. For example, the wakeup file in the /proc/acpi directory below displays the following information:
+
+		in terminal{
+			sysadmin@localhost:~$ su -
+			Password:
+			root@localhost:~# ls -l /proc/acpi
+			total 0
+			-rw-r--r-- 1 root root 0 May 28 21:09 wakeup
+			root@localhost:~# cat /proc/acpi/wakeup
+			Device  S-state   Status   Sysfs node
+			PCI0      S5    *disabled  no-bus:pci0000:00
+			root@localhost:~#
+		}
+
+		## When the kernel sends out an ACPI event, acpid will determine the next steps based on rules defined in configuration files in the /etc/acpi directory. Administrators can create rules scripts in the /etc/acpi directory to control the actions taken by the system.
+
+		# The acpi command is used to display information about system hardware ACPI settings, it’s not installed on our VM, but the above example shows a basic acpi script in the /proc/acpi directory that controls waking the machine up after being suspended. There are many options available to the acpi command to display various information for power management. The table below summarizes some of the options available to the acpi command:
+
+		Option 				Purpose
+
+		-b | --battery		Displays battery information
+
+		-a | --ac-adapter	Displays ac adapter information
+
+		-t | --thermal 		Displays thermal information
+
+		-c | --cooling 		Displays cooling device information
+
+		-s | --show-empty 	Displays non-operational devices
+
+		-f | --fahrenheit	Uses Fahrenheit as the temperature unit instead of the default, Celsius
+
+		-i | --details		Displays additional details if they are available; battery capacity and temperature trip points
+	}
+
+	key terms{
+		
+		/etc/init.d/
+			Contains scripts used by the System V init tools (SysVinit)
+			Section 18.6 
+		/etc/inittab
+			Configuration file read by init when it starts up to determine what process to start for various run levels.
+			| Section 18.2 
+		/etc/systemd/
+			The location of various unit files that control services controlled by systemd.
+			Section 18.11 
+		/usr/lib/systemd/
+			The location of services provided by installed packages.
+			Section 18.11 
+		init
+			The parent of all processes on the system, it is executed by the kernel and is responsible for starting all other processes.
+			| Section 18.4 
+		shutdown
+			Arranges for the system to be brought down in a safe way. All logged-in users are notified that the system is going down and, within the last five minutes of TIME, new logins are prevented.
+			Section 18.4 
+		systemctl
+			The interface to systemd, the init system used by many Linux distributions. It combines the functionality of both service and chkconfig into a single tool that you can use for instance to enable/disable services permanently or only for the current session.
+			Section 18.11 
+		systemd
+			A full replacement for init with parallel starting of services and other features, used by many distributions.
+			| Section 18.1 
+		telinit
+			Signal init to change the system's runlevel. telinit is actually just a link to init, the ancestor of all processes.
+			Section 18.4 
+		wall
+			Displays a message, or the contents of a file, or otherwise its standard input, on the terminals of all currently logged in users.
+			Section 18.5 
+	}
+}
+
+
+chapter 19 and 20
+	in class{
+		Display disks and partitions:
+			df -h
+			ls /dev/sd*
+			ls -i //lists all files and directories with Inode number.
+
+
+
+		Creating partitions from command line:
+			fdisk:
+			sudo fdisk -l /dev/sda //lists existing partitions on a device
+			sudo fdisk <partition_name> //an interactive tool that doesn't make change until you "save"
+
+
+
+		sudo fdisk /dev/sda
+			-p print partition information
+			-n create new partition
+			-e extended
+			-p primary
+			-t //change partition type
+			-L //display a list of partitions types
+			-d //delete a partition
+			-q //quit without saving
+			-w //to save changes and quit
+
+
+
+		sfdisk Scriptable fdisk-like program for automate partitioning
+			also used to backup and restore current partition table.
+			sfdisk
+			sudo sfdisk -s //list disk and sizes
+			sudo sfdisk -d /dev/sda1 > sdb1.backup //backup current table before making changes
+
+
+
+		creating filesystems
+			mkfs -t vfat /dev/sda1 //create a file system
+
+
+
+		creating a swap space:
+			mkswap /dev/sda1 //initialize a swap partition
+			mkswap -L myswap /dev/sda1
+			swapon /dev/sda2 //enable swap space
+	}
