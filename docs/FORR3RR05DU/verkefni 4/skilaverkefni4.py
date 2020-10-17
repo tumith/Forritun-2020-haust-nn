@@ -1,4 +1,5 @@
 from math import *
+import re
 
 class Vigur:
 
@@ -36,7 +37,7 @@ class Vigur:
 
     # Fall sem tekur vigur sem parameter og skilar summu vigri
     def summa(self,v):
-        return self.x + v.x * self.y + v.y
+        return Vigur( self.x + v.x, self.y + v.y )
 
 
 inpx = int( input( 'hvað er x fyrir fyrsta vigur ' ) )
@@ -59,3 +60,51 @@ print( 'Horn milli vigra: ', v2.horn( v1 ) )
 v3 = v1.summa( v2 )
 print( 'Summa: ', end = ' ' )
 v3.prenta()
+
+
+
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 2
+
+inpm = str( input( 'Marglida: ' ) )
+marglida = inpm
+
+listi = []
+lidir = re.split( '[+-]', marglida )
+
+for i in lidir:
+    listi.append(i)
+    print( i )
+    
+
+print(listi)
+
+N = int( input( 'Enter how many times you want to sum (more times = more accurate)' ) )
+a = float( input( 'Enter the lower integration bound: ' ) )
+b = float( input( 'Enter the upper integration bound: ' ) )
+
+def Integrate( N, a, b ):
+    def f(x):
+        # type your function after return
+        return x^2
+    val = 0
+    val2 = 0
+    for n in range( 1, N + 1 ):
+        val += f( a + ( ( n - ( 1 / 2 ) ) * ( ( b - a ) / N ) ) )
+    val2 = ( ( b - a ) / N ) * val
+    return val2
+
+# Output including  the integration value:
+print( '......................................' )
+print( 'Here is your answer: ' )
+print( Integrate( N, a, b ) )
+
+for i in lidir:
+    full_split = re.split( '[x]', i )
+    print( full_split )
+    x = 0
+    while x != 1:
+        if listi[ x ] == '':
+            print( 'x^' )
+        x = x + 1
