@@ -87,7 +87,7 @@ b = float( input( 'Enter the upper integration bound: ' ) )
 def Integrate( N, a, b ):
     def f(x):
         # type your function after return
-        return x^2
+        return x**2
     val = 0
     val2 = 0
     for n in range( 1, N + 1 ):
