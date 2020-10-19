@@ -4,6 +4,8 @@ MEANING OF THINGS
 
 	!!! = important
 
+	!!!! = Warnings
+
 	# = command
 
 	## = interesting
@@ -1954,7 +1956,7 @@ chapter 18: Runlevels{
 }
 
 
-chapter 19 and 20
+chapter 19 and 20{
 	in class{
 		Display disks and partitions:
 			df -h
@@ -2001,3 +2003,483 @@ chapter 19 and 20
 			mkswap -L myswap /dev/sda1
 			swapon /dev/sda2 //enable swap space
 	}
+
+	me read chapter 19{
+		Understanding Partitioning{
+			# Partitioning is necessary in order to optimally use the space that hard drives (hard disks) provide. A new hard drive is like a completely empty building, with no internal walls or floors. As it is, such a building wouldn't be useful, but populating the building with walls and floors would provide the structure needed to make use of the building.
+
+			There are three steps in the process of making and using partitions:{
+				1. Divide the hard drive into partitions.
+				2. Create and format filesystems inside the partitions.
+				3. Mount the filesystem into the directory tree.
+			}
+		}
+
+		Partition Limitations{
+			# Historically, the number of partitions a system can have is limited by the Master Boot Record (MBR). Recall that the MBR is usually contained within the first sector or 512 bytes of the disk and contains a bootloader program, as well as the partition table. The partition table contains the definition of each partition on the hard drive, including the starting cylinder, ending cylinder, and size.
+
+			# Up until now, we’ve only discussed MBR partitioning; however, some hard drives make use of another partitioning type called the GUID Partition Table (GPT). A globally unique identifier (GUID) is a universally unique 128-bit number used to identify information on a computer system. This partitioning scheme was designed to replace the traditional MBR partitioning in use since PC DOS 2.0 was introduced in 1983 and is available on systems that support the Unified Extensible Firmware Interface (UEFI).
+
+			# GPT supports very large disks, up to 9ZB in size. Extended and logical partitions are not used with GPT; instead, all partitions are the same, and GPT supports a maximum of 128 partitions per disk. Creating GPT partitions is accomplished using a partitioning tool called gdisk, which is similar to the fdisk utility that is used for MBR partitions.
+
+			# In addition to MBR and GPT partition tables, there are other methods for dividing up the disk, including Berkeley Software Distribution (BSD) Unix Labels, Apple Partition Maps, and others. Also, there are tools to use partitions in more flexible and dynamic ways, like Logical Volume Management (LVM).
+		}
+
+		Filesystem{
+			# Next, we'll examine the concept and purpose of the filesystem in regards to partitioning. In order to place files and directories on a partition, a filesystem needs to be created. This is accomplished by formatting the partition. A filesystem provides the operating system with a way to organize the files and directories. Moreover, a filesystem stores information about files, such as the permissions of the files, the owner of the files, and the file type.
+			# An analogy that may help in understanding filesystems is to consider the library example previously mentioned. A library has thousands of books (think files) that need to be organized in a manner that makes it easy to find a specific book. In order to do this, the books are organized into categories (think directories). However, just putting books into directories isn't sufficient since a single category can contain hundreds or even thousands of books.
+			# To better organize all of the books in the library, a system such as the Dewey Decimal System is used. This system provided a central catalog of index cards, normally located in a cabinet at the front of a section where individuals could determine the exact location of a specific book. Included in the catalog is metadata about each book, such as publication date, author, publisher, etc. A key component of this metadata is a unique identification number for each book
+
+			# Metadata about the file will be contained in this entry, which includes file attributes like ownership, timestamps, data block locations, and everything about the file except for its contents. The entry also includes a unique identification number for the file, called an inode number and pointers (or links) that inform the operating system of the location in the filesystem (where on the hard drive) the file's data is stored.
+			## Keep in mind that there is more than one way to organize books in a library. For example, in addition to the Dewey Decimal System, there is a system called the Library of Congress Classification system that performs the same function as the Dewey Decimal System but uses a different technique. The same holds true for the filesystems available for Linux; there is more than one type available, and each uses a different technique. Some of the more common filesystem types include:
+
+				Type() 					Name() 								Advantages()																																						Disadvantages()
+				ext2 					Second Extended Filesystem 			Works well with small and solid-state disk filesystems 																												No journaling capability, making it susceptible to data loss in the event of power loss.
+				ext3 					Third Extended Filesystem 			Can be upgraded from existing ext2 filesystem without data loss. This filesystem performs journaling, which allows for data recovery after a crash. 				Writes more to disk than ext2 because of journaling, making it slower. Does not support very large filesystems.
+				ext4 					Fourth Extended Filesystem 			Support for very large disk volumes and file sizes. Can operate with or without a journal. Backwards compatible with ext3 and ext2. 								Not a huge improvement over ext3. No dynamic inode creation.
+				xfs 					Extents Filesystem 					Works very efficiently with large files. Compatible with the IRIX operating system from SGI. Announced to be the default filesystem for RHEL 7. 					The filesystem cannot be shrunk.
+				vfat 					File Allocation Table 				Supported by almost all operating systems. Commonly used for removable media. 																						Unable to support very large disks or files. Microsoft's intellectual property claims.
+				iso 					ISO 9660 							The International Organization for Standardization standard for optical disc media that is supported by almost all operating systems. 								Multiple levels and extensions complicate compatibility. Not designed for rewritable media.
+				udf 					Universal Disc Format 				Designed to replace ISO 9660 and adopted as the standard format for DVDs by the DVD Consortium. 																	Write support is limited to support revision 2.01 of the standard.
+		}
+
+		Linux Filesystem Components{
+			# When talking about Linux the term filesystem often refers to the ext2/ext3/ext4 family of filesystems. While there are differences between these filesystems, they are similar enough when it comes to core filesystem components.
+			## A full discussion of filesystem components is beyond the scope of this course, and also presents somewhat of a moving target with virtualization and cloud computing gaining prominence. However, since Linux still operates by the kernel communicating with external resources, all system administrators need to be familiar with the key filesystem components described below:
+
+				Component 		Description
+				Superblock 		At the beginning of the filesystem is an area called the superblock. This area is used to store important information about the filesystem, including the size of the filesystem, the type of filesystem, and which data blocks (where file data is stored) are available. The superblock is a key component of the filesystem; a corrupted superblock would make the filesystem inaccessible.
+				Group Block 	The filesystem is divided into smaller sections called groups. The group block serves to hold data about the group. Each group block also contains a backup copy of the superblock.
+				Inode Table 	Each file is assigned a unique inode number for the filesystem. This inode number is associated with a table that stores the file's metadata.
+		}
+
+		Physical vs. Virtual Filesystems{
+			# On Microsoft Windows, this is accomplished by assigning drive letters to each partition. The first partition is typically referred to as the C: drive (which is poorly named as it is actually a partition, not an entire drive). Newer Microsoft Windows systems may come with multiple partitions, resulting in partitions such as D:, E:, and F:. Note that A: and B: were previously used for floppy drives and are not typically used for hard drive partitions.
+
+			## In Linux, there are no drive letters. Instead, each partition is assigned a device file name as mentioned previously:
+
+				Device Types 				Partition Name 		Example
+				SATA, SCSI, USB 			/dev/sda* 			/dev/sda1
+																/dev/sda2
+
+				PATA/IDE 					/dev/hda* 			/dev/hda1
+																/dev/hda2
+		}
+
+		Why Create Partitions?{
+
+			Supporting Multiple Operating Systems{
+				Some systems may contain Linux as well as a Microsoft Windows operating systems; these are called dual boot systems. Because the filesystems that are used with Microsoft Windows are different than Linux, this requires multiple partitions.
+			}
+
+			Home Directories{
+				## A separate partition for the user home directories is common and typically provides many advantages, including:
+
+					1. It is easier to backup or restore an entire filesystem than it is to manage each user's home directory. Recall that each partition has a separate filesystem.
+
+					2. When home directories are separated from the root filesystem, upgrades of the operating system can be performed much more safely and efficiently.
+
+					3. Filesystems can have features enabled on them, such as disk quotas. A disk quota allows the administrator to limit how much space a user uses in a filesystem. Being able to create a disk quota for the home directories that doesn't affect the rest of the operating system can be an advantage.
+			}
+
+			Common Writable Directories{
+				# Some directories, such as the /tmp and /var/tmp directories, are world writable. This means that any user can store files in these directories without any limitations, by default. Unfortunately, that can cause problems if these directories are not placed on separate filesystems.
+				## If the /tmp and /var/tmp directories are not mount points, then files placed in these directories will go on the same partition as the / filesystem. If a user creates a very large file, then he could end up filling up the entire / filesystem. This would make the operating system unusable by all other users (except the root user for whom some space is reserved).
+				## Separating the /tmp and /var/tmp directories allows the administrator to enable disk quotas to limit how much space can be used by each user in those directories. Even if no quotas are put into effect, having directories on a separate partition means if a regular user fills up the partition(s) /tmp or /var/tmp are located on, the root filesystem or other critical filesystems are not affected.
+			}
+
+			Security{
+				## Using separate partitions may enhance security. Since each partition has separate inodes and data blocks, corruption to a single partition will be contained to its mount point within the virtual filesystem. Therefore, spreading files across multiple partitions is safer than having one partition that contains everything under the root directory.
+				# Sometimes a collection of files, perhaps old databases, need to be stored but shouldn't be modified. By placing them on a separate filesystem, that partition can be mounted as read-only to prevent any alteration.
+			}
+
+			Heavily Active{
+				# If running out of space is a concern due to heavy activity within a directory, it may be desirable to have it mounted on a separate partition. This is often the case for directories like the /var/log directory where the system adds log file data on a regular basis.
+				## When system processes (as opposed to regular users) write to the disk, quotas are not usually used to limit the space. Instead, these types of directories are mounted on separate filesystems so that if they fill up then it won't fill up the root / filesystem. While this may be bad because log files aren't generated, it is better than filling up the root / filesystem and making the operating system unusable for regular users.
+
+				##Another type of partition that is useful in making system tasking more efficient is swap space. To describe the concept of swap space, we will use another analogy of a physical library. In a library, there are always new books coming in and old ones going out. These books are usually kept in a storage room or basement, still organized but separate from the main shelves. If a book is being transferred, it is pulled from this storage and sent to another library where it will be used. In a computer filesystem, this area is called swap space. This is a location on the physical drive where data is stored while programs are using it. It emulates random access memory (RAM) and frees up the actual physical memory for other processing tasks. This allows the operating system to quickly provide information in files without having to read and write it to the main storage areas. When the user is finished with this data, it is written to the appropriate area on the drive, and the swap space is freed up for the next task. Swap space on an operating system can take the form of a dedicated partition (swap partition), a file (swap file), or both.
+			}
+		}
+
+		Partitioning Layout{
+			# There are some requirements in the way partitions will map to the directories that they mount on. These requirements are documented in what is called the Filesystem Hierarchy Standard (FHS). The following table summarizes the FHS requirements, and provides some other suggestions:
+
+				Directory 			Purpose																																																						Suggested Size
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				/ 					The root filesystem holds the files essential to the operation of the system. It must contain the following directories or symbolic links: bin, boot, dev, etc, lib, media, mnt, opt, sbin, srv, tmp, usr, and var. 		500MiB-50GiB+
+																																																																Depends on what is mounted separately
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				/boot 				The /boot directory contains the Linux kernel and the boot loader files. 																																					500MiB-2GB
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				/home 				The /home directory is where user home directories are normally created. 																																					500MiB+ per user
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				/tmp 				The /tmp directory is used to create temporary files for the system and users. If this directory is too small, it may prevent applications from functioning correctly. 														Minimum of 5 GB +
+																																																																500MiB+ per user actively logged in
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				/opt 				The /opt directory is where third-party software is often installed. Some examples include Google Chrome and Google Earth. 																									100MiB+
+																																																																Depends on how many packages are installed
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				swap 				Swap is virtual memory that is not mounted on a directory. This virtual memory is used when the actual memory of the system is low. On systems with large amounts of memory, swap is less important. 						Up to 2 times the physical memory of the system
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				/usr 				The /usr directory contains the bulk of the operating system's files, including most of the commands and system software. 																									2GiB-10GiB+
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				/usr/local 			This directory is used for locally installed software that should not be upgraded or updated with the operating system. 																									100MiB+
+																																																																Size depends on local needs
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				/var 				There are many directories that may have heavy activity under /var for services like mail, ftp, http, and printing. 																										100MiB
+																																																																Depending on the volume of activity
+				------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				/boot/efi 			The /boot/efi directory contains the Linux kernel and the boot loader files. It is typically set up automatically by the installer. 																						100MB-250MB
+		}
+	}
+
+	me read chapter 20{
+		20.2 Creating Partitions During Installation{
+			When choosing one of these options, the following should be taken into consideration:{		
+
+				1. Use All Space: Use this option when there is no need to save any data from the existing hard drive. This option will remove all traces of any previous hard drive data, including previous installations of other operating systems.
+
+				2. Replace Existing Linux Systems: Use this option when the system is a dual boot system, typically a system with both a Linux operating system and a Microsoft Windows operating system. Realize that all Linux operating systems will be replaced by this new installation. However, the Microsoft Windows operating system should not be impacted.
+
+				3. Shrink Current System: This option would be used to recover hard drive space from an existing Linux operating system. The recovered space could then be used to install a second Linux operating system for a dual boot system. This is an advanced installation method, and all data from the existing Linux operating system should be backed up prior to using this method.
+
+				4. Use Free Space: This option assumes that a previous operating system (Microsoft Windows or Linux) has already been installed and there is still unpartitioned space available on the hard drive. This is usually the case when creating a dual boot system as Microsoft Windows should be installed first without using all of the hard drive space. The remaining space is used by the Linux Installer to install the Linux operating system.
+				
+				5. Create Custom Layout: This option is used for advanced installations. The administrator is provided with the opportunity to remove existing partitions and create new partitions to meet the needs of the customized installation.
+			}
+
+			Components of this graphic:{
+				
+				Mount Point: The directory where the filesystem for this partition will be mounted.
+
+				File System Type: The type of filesystem to place on this partition. The exact types that will be available during the installation will depend on what specific Linux operating system is being installed.
+
+				Allowable Drives: This area provides a list of available hard drives. If only one hard drive is present, then it is greyed out. If multiple hard drives are present, then the individual who is performing the installation can choose which hard drive to place this partition on.
+
+				Size (MB): The size in megabytes of the partition. Note that this relates to the next field.
+
+				Additional Size Options:{
+
+					Fixed Size: The partition will be the size specified by the Size (MB) field.
+
+					Fill all space up to (MB): The partition will be at least the size specified by the Size MB field but can be as large as this field. For example, if the Size (MB) field is 500, and the Fill all space up to (MB) field is 800, then partition size will be between 500MB and 800MB. This is useful when the individual that is performing the installation creates partitions, and there is extra space left over. The installer will automatically take this extra space and assign it to partitions that make use of this field.
+
+					Fill to maximum allowable size: The partition will be at least the size specified by the Size (MB) field. Any additional unpartitioned space will be given to this partition. If multiple partitions have this option, the unpartitioned space is divided equally between these partitions.
+
+				}
+
+			}
+		}
+
+		20.3 Creating Partitions After Installation{
+			# One of the benefits of the fdisk tool is that it is very forgiving; if a mistake is made while using the tool, simply quit the program, and nothing will be changed on the system. Only when changes are written (saved) before quitting will the program update the partition table.
+			# The fdisk program can be used in two ways: interactive and non-interactive. The interactive mode is used to modify the partitions, and the non-interactive mode is used to list partitions. In either mode, the fdisk program requires root privileges to run.
+
+			### A couple of options can affect the output of the program when working with it in either mode. The units option -u will list the starting and ending locations for each partition in sectors instead of cylinders. Since Linux technically partitions by sector, it may be beneficial to use this option. If cylinders are used, the fdisk utility will translate into sectors, so using the -u option is only really required for fine tuning of partition sizes and to avoid seeing the following error message, arrowed below:
+
+			in terminal {
+				root@localhost:~# fdisk -l /dev/sda
+				Disk /dev/sda: 11.3 GB, 11261706240 bytes
+				255 heads, 63 sectors/track, 1369 cylinders
+				Units = cylinders of 16065 * 512 = 8225280 bytes
+				Sector size (logical/physical): 512 bytes / 512 bytes
+				I/O size (minimum/optimal): 512 bytes / 512 bytes
+				Disk identifier: 0x000ee7d2
+
+				Device Boot      Start         End      Blocks   Id  System
+				/dev/sda1   *           1          64      512000   83  Linux
+				---->  Partition 1 does not end on cylinder boundary.  <--------
+				/dev/sda2              64        1306     9972736   Linux LVM
+				/dev/sda3           1306        1319     102400   82  Linux swap / Solaris
+				---->  Partition 3 does not end on cylinder boundary.  <--------
+			}
+
+			consider this{
+				# On almost every Linux distribution, the default fdisk output is displayed in cylinders. One exception is Ubuntu, which displays output in sectors by default. To display the output in cylinders, use the -u=cylinders option.
+			}
+
+			When using the fdisk utility, a warning will occur by default:{
+				Warning
+				DOS-compatible mode is deprecated.  It's strongly recommended to switch off the mode and change the display units to sectors.
+			}
+
+			# The -c option disables the warning regarding compatibility issues with the MS-DOS operating system. Although it is very unlikely that compatibility with this operating system will be an issue since DOS has not been available as a product for nearly twenty years, a warning will be issued if the -c option is not used.
+		}
+
+		20.3.1 Displaying Partitions{
+			# To use fdisk in its non-interactive mode, add the -l option. To demonstrate, the following command will display a list of all partitions of all hard disk devices:
+
+			in terminal{
+				root@localhost:~# fdisk -cul
+				Disk /dev/sda: 21.5 GB, 21474836480 bytes
+				255 heads, 63 sectors/track, 2610 cylinders
+				Units = cylinders of 16065 * 512 = 8225280 bytes
+				Sector size (logical/physical): 512 bytes / 512 bytes
+				I/O size (minimum/optimal): 512 bytes / 512 bytes
+				Disk identifier: 0x000571a2
+
+				Device Boot      Start         End      Blocks   Id  System
+				/dev/sda1   *           1        2481    19921920   83  Linux
+				/dev/sda2            2481        2611     1046529    5  Extended
+				/dev/sda5            2481        2611     1046528   82  Linux swap / Solaris
+			}
+
+			Device Info{
+				in terminal{
+					Disk /dev/sda: 10.7 GB, 10737418240 bytes
+				}
+				# The device name and size of the device in bytes.
+			}
+
+			Columns{
+				   	Device Boot   	    Start         End      Blocks  	 Id 	 System
+					/dev/sda1   *           1        2481    19921920  	 83 	 Linux
+					/dev/sda2            2481        2611     1046529  	  5 	 Extended
+					/dev/sda5            2481        2611     1046528  	 82  	 Linux swap / Solaris
+					---------------------------------------------------------------------------------
+
+					Device 	->	The specific partition that the row is describing. For example, /dev/sda1 is the first partition on the first SATA hard drive.
+					Start 	->	The starting sector of the partition.
+					End 	->	The ending sector of the partition.
+					Blocks 	->	The size of the partition in blocks.
+					Id 		->	An identifier which is used to tell the kernel what type of filesystem should be placed on this partition. For example, the value 83 indicates that this partition should have an ext2, ext3, or etx4 filesystem type.
+					System 	->	A human-readable name that indicates the type of filesystem the Id column refers to. For example, 83 is a Linux filesystem.
+			}
+
+			To see the partitions of a specific hard disk, add the pathname for the disk as an argument to the previous command.{
+				in terminal{
+					root@localhost:~# fdisk -c=dos -u=sectors -l /dev/sdb
+					Disk /dev/sdb: 505 MB, 505413632 bytes
+					5 heads, 52 sectors/track, 3796 cylinders, total 987136 sectors
+					Units = sectors of 1 * 512 = 512 bytes
+					Sector size (logical/physical): 512 bytes / 512 bytes
+					I/O size (minimum/optimal): 512 bytes / 512 bytes
+					Disk identifier: 0x7f08b2c3
+
+					Device Boot  	Start     	End  	Blocks   Id  System
+					/dev/sdb1        	2552  	987135  	492292	6  FAT16
+				}
+			}
+
+			# The partition table described above is stored permanently in the MBR. When the system is booted, a copy is created in memory. This copy is used by the kernel for various system tasks. The kernel can't look directly at a filesystem to determine what type it is. So, the partition table stores this information for the benefit of the kernel. When the partition is created, it is the responsibility of the system administrator to indicate what type of filesystem will be placed on that partition by providing the partition type.
+
+
+			Consider This{
+				A useful tip for using fdisk in interactive mode is that a copy of the output of the fdisk -l command can be sent to a file on disk. Anyone who has ever made a mistake when partitioning a disk and needs to refer to the previous setup will appreciate having a copy of the exact cylinders and filesystems to refer to.
+
+				in terminal{
+					root@localhost:~# fdisk -l /dev/sda > mydisklayout.txt
+				}
+			}
+		}
+
+		20.3.2 fdisk Interactive Mode{
+			# In the interactive mode, a system administrator can use the fdisk command to create and modify partitions. To enter the interactive mode, do not use the -l option, but still use -c and -u options. The pathname for the disk to edit is required. For example, to edit the partitions for the first SATA /dev/sda hard drive, execute the following command to display a prompt: {
+				in terminal{
+					root@localhost:~# fdisk -cu /dev/sda
+					Command (m for help):
+
+					# The m command will display a menu or help screen:
+
+					Command (m for help): m
+
+					Command action
+					a   toggle a bootable flag
+					b   edit bsd disklabel
+					c   toggle the dos compatibility flag
+					d   delete a partition
+					l   list known partition types
+					m   print this menu
+					n   add a new partition
+					o   create a new empty DOS partition table
+					p   print the partition table
+					q   quit without saving changes
+					s   create a new empty Sun disklabel
+					t   change a partition's system id
+					u   change display/entry units
+					v   verify the partition table
+					w   write table to disk and exit
+					x   extra functionality (experts only)
+				}
+			}
+
+			# Before creating any partitions, it is a good idea to print the partition table by choosing the p command action. Note that this doesn't really send output to a printer, but to the screen instead. The output will look very much like the output of the fdisk -l command.{
+
+				in terminal{
+					Command (m for help): p
+
+				Disk /dev/sda: 11.3 GB, 11261706240 bytes
+				255 heads, 63 sectors/track, 1369 cylinders, total 21995520 sectors
+				Units = sectors of 1 * 512 = 512 bytes
+				Sector size (logical/physical): 512 bytes / 512 bytes
+				I/O size (minimum/optimal): 512 bytes / 512 bytes
+				Disk identifier: 0x000ee7d2
+
+				Device Boot      Start         End      Blocks   Id  System
+				/dev/sda1   *        2048     1026047      512000   83  Linux
+				/dev/sda2         1026048    20971519     9972736   8e  Linux LVM
+				}
+			}
+		}
+
+		20.3.3 Creating Partitions{
+			In order to create a new partition, the n command action should be chosen:{
+				in terminal{
+					Command (m for help): n
+				}
+				This command will prompt the system administrator to answer several questions, as described below.{
+					Type of Partition ( in terminal ){
+						Command Action
+						e   extended
+						p   primary partition (1-4)
+					}
+
+					The choices that are available to answer this question will vary, depending on what partitions already exist:‌⁠​​⁠​{
+						
+						1. If no extended partition has been created, the choices will be e for an extended partition or p for a primary partition.
+						2 .If the extended partition has been created, the fdisk utility will automatically create a logical partition within the free space of the extended partition.
+					}
+
+					Partition Number ( in terminal ){
+						Partition number (1-4): 3
+
+						# When creating a primary partition, the fdisk utility will prompt for a partition number. Again, it is helpful to display the partition table to identify what the last partition number was and a numeric value of one higher. For example, if the last partition number was 2, then the next partition should be numbered 3.
+						# When creating logical partitions, the fdisk utility will not prompt for a partition number and will assign a number by default.
+					}
+
+					Starting Sector ( in terminal ){
+						First sector (20971520-21995519, default 20971520):
+
+						# The next question asks where to start the new partition. Allocating this first sector should be extremely easy because the fdisk utility knows which sector is the next available. Pressing the Enter key accepts this value.
+
+						Using default value 20971520
+
+						!!! ## It is possible to type the sector number, but this is generally not recommended, as it may create unusable ranges of sectors.
+					}
+
+					Partition Size ( in terminal ){
+						Last sector, +sectors, or +size{K,M,G} (20971520-21995519, default 21995519):
+
+						# The last question asks what size the partition should be. There are three different techniques for assigning the last sector: last sector, +sectors, or +size: (still in terminal)
+							# Using the last sector technique can be the hardest because there are a couple of calculations required. Sectors of a disk are generally 512 bytes in size, so to make a new 100 MB partition requires approximately 200,000 sectors. To calculate the last sector, add 200,000 to the value of the starting sector. Typically, the last sector technique is only used to utilize the rest of the available space. In that case, accept the default value by pressing the Enter key:
+								Last sector, +sectors, or +size{K,M,G} (20971520-21995519, default 21995519):
+								Using default value 21995519
+
+							# Using the +sectors technique takes one less calculation than the last sector technique. With this technique, calculate the number of sectors needed and prefix it with the + plus sign. For example, to create a partition that is approximately 100MB, enter the value as +200000:
+								Last sector, +sectors, or +size{K,M,G} (20971520-21995519, default 21995519): +200000
+							
+							# The final technique +size is normally preferred since no calculations are needed. Use the + plus sign, the size to make the partition, and a suffix to indicate the unit. For example, to specify the 100 MB size partition, enter the value for the ending sector as +100M:
+								Last sector, +sectors, or +size{K,M,G} (20971520-21995519, default 21995519): +100M
+					}
+				}
+			}
+
+			The following is an example of an interaction with fdisk to create a new 100 MB partition using these steps:{
+				
+				1. The current partition table is displayed with the p command.
+				2. The n command indicates a new partition is being created.
+				3. The user enters p to create a primary partition.
+				4. The partition is assigned as number 3.
+				5. The default value for the first sector is chosen by pressing the Enter key.
+				6. For the size, the user chooses +100M for a one-hundred-megabyte partition
+
+				in terminal{
+					Command (m for help): p
+
+					Disk /dev/sda: 11.3 GB, 11261706240 bytes
+					255 heads, 63 sectors/track, 1369 cylinders, total 21995520 sectors
+					Units = sectors of 1 * 512 = 512 bytes
+					Sector size (logical/physical): 512 bytes / 512 bytes
+					I/O size (minimum/optimal): 512 bytes / 512 bytes
+					Disk identifier: 0x000ee7d2
+
+					Device Boot      Start         End      Blocks   Id  System
+					/dev/sda1   *        2048     1026047      512000   83  Linux
+					/dev/sda2         1026048    20971519     9972736   8e  Linux LVM
+
+					Command (m for help): n
+					Command Action
+					e   extended
+					p   primary partition (1-4)
+					p
+					Partition number (1-4): 3
+					First sector (20971520-21995519, default 20971520):
+					Using default value 20971520
+					Last sector, +sectors, or +size{K,M,G} (20971520-21995519, default 21995519): +100M
+
+
+					# After creating a partition, verify that it was correctly created by displaying the partition table:
+
+					Command (m for help): p
+
+					Disk /dev/sda: 11.3 GB, 11261706240 bytes
+					255 heads, 63 sectors/track, 1369 cylinders, total 21995520 sectors
+					Units = sectors of 1 * 512 = 512 bytes
+					Sector size (logical/physical): 512 bytes / 512 bytes
+					I/O size (minimum/optimal): 512 bytes / 512 bytes
+					Disk identifier: 0x000ee7d2
+
+					Device Boot      Start         End      Blocks   Id  System
+					/dev/sda1   *        2048     1026047      512000   83  Linux
+					/dev/sda2         1026048    20971519     9972736   8e  Linux LVM
+					/dev/sda3        20971520    21176319      102400   83  Linux
+
+					# When verifying this data, pay close attention to the Start and End sectors. Notice in the previous output that the starting sector of the /dev/sda3 partition is one value higher than the ending sector of the /dev/sda2 partition. Any overlap would result in data loss and should be avoided.
+
+					!!! ## No changes have been made to the MBR, so it is possible to quit now in the event that any errors are displayed in the new partition table. To quit without saving changes, use the q command.
+				}
+			}
+			!!!! The fdisk command is a destructive partitioning tool. Any changes to your partition structure may overwrite existing partition information and make data inaccessible.
+			
+			# In the next example, a fourth partition is added as an extended partition, and then two logical partitions are created within the extended partition. Notice that once the extended partition has been created, the fdisk utility skips the first two steps, since the partition is automatically designated as logical and assigned a number.{
+
+				Command (m for help): n
+				Command Action
+				e   extended
+				p   primary partition (1-4)
+				e
+				Partition number (1-4): 4
+				First sector (21176320-21995519, default 21176320):
+				Using default value 21176320
+				Last sector, +sectors, or +size{K,M,G} (21176320-21995519, default 21995519):
+				Using default value 21995519
+				Command (m for help): n
+				First sector (21178368-21995519, default 21178368):
+				Using default value 21178368
+				Last sector, +sectors, or +size{K,M,G} (21178368-21995519, default 21995519): +100M
+				Command (m for help): n
+				First sector (21385216-21995519, default 21385216):
+				Using default value 21385216
+				Last sector, +sectors, or +size{K,M,G} (21385216-21995519, default 21995519):
+				Using default value 21995519
+
+				# Notice that the logical partitions use starting and ending sectors that are within the extended partition:
+
+				Command (m for help): p
+
+				Disk /dev/sda: 11.3 GB, 11261706240 bytes
+				255 heads, 63 sectors/track, 1369 cylinders, total 21995520 sectors
+				Units = sectors of 1 * 512 = 512 bytes
+				Sector size (logical/physical): 512 bytes / 512 bytes
+				I/O size (minimum/optimal): 512 bytes / 512 bytes
+				Disk identifier: 0x000ee7d2
+
+				Device Boot      Start         End      Blocks   Id  System
+				/dev/sda1   *        2048     1026047      512000   83  Linux
+				/dev/sda2         1026048    20971519     9972736   8e  Linux LVM
+				/dev/sda3        20971520    21176319      102400   83  Linux
+				/dev/sda4        21176320    21995519      409600    5  Extended
+				/dev/sda5        21178368    21383167      102400   83  Linux
+				/dev/sda6        21385216    21995519      305152   83  Linux
+			}
+
+			!!! ### Delete partitions by using the d command. Be careful to avoid deleting necessary existing partitions, as this may result in an unusable system.
+		}
+
+		20.3.4 Changing the Filesystem Type{
+
+			HALDA ÁFRMA MEÐ KAFLA 20
+
+		}
+	}
+}
