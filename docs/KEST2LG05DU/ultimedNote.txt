@@ -2256,8 +2256,8 @@ chapter 19 and 20{
 					I/O size (minimum/optimal): 512 bytes / 512 bytes
 					Disk identifier: 0x7f08b2c3
 
-					Device Boot  	Start     	End  	Blocks   Id  System
-					/dev/sdb1        	2552  	987135  	492292	6  FAT16
+					Device Boot  		Start     End 	 	Blocks   	Id  	System
+					/dev/sdb1        	2552  	987135  	492292		6  		FAT16
 				}
 			}
 
@@ -2478,8 +2478,604 @@ chapter 19 and 20{
 
 		20.3.4 Changing the Filesystem Type{
 
-			HALDA ÁFRMA MEÐ KAFLA 20
+			# By default, the fdisk utility sets the filesystem type to Id 83 (Linux) for primary and logical partitions. For extended partitions, the Id should be 5 and should never be changed.
 
+			in terminal{
+				# To change the filesystem type, use the t command:
+					Command (m for help): t
+				# The fdisk utility will prompt for the number of the partition to be changed:
+					Partition number (1-6): 6
+
+				# Lastly, the user will be prompted to enter a hexadecimal value for the Id. In the following example output, the user enters a value of 82, which changes the partition Id to Linux swap/Solaris:
+					Hex code (type L to list codes): 82
+
+					Changed system type of partition 6 to 82 (Linux swap / Solaris)
+
+				# While at the Hex Code prompt, the user can display a list of the hex codes that are available by typing the L character:
+					Hex code (type L to list codes): L
+
+					0  Empty           24  NEC DOS         81  Minix / old Lin bf  Solaris
+					1  FAT12           39  Plan 9          82  Linux swap / So c1  DRDOS/sec (FAT-
+					2  XENIX root      3c  PartitionMagic  83  Linux           c4  DRDOS/sec (FAT-
+					3  XENIX usr       40  Venix 80286     84  OS/2 hidden C:  c6  DRDOS/sec (FAT-
+					4  FAT16 <32M      41  PPC PReP Boot   85  Linux extended  c7  Syrinx
+					5  Extended        42  SFS             86  NTFS volume set da  Non-FS data
+					6  FAT16           4d  QNX4.x          87  NTFS volume set db  CP/M / CTOS / .
+					7  HPFS/NTFS       4e  QNX4.x 2nd part 88  Linux plaintext de  Dell Utility
+					8  AIX             4f  QNX4.x 3rd part 8e  Linux LVM       df  BootIt
+					9  AIX bootable    50  OnTrack DM      93  Amoeba          e1  DOS access
+					a  OS/2 Boot Manag 51  OnTrack DM6 Aux 94  Amoeba BBT      e3  DOS R/O
+					b  W95 FAT32       52  CP/M            9f  BSD/OS          e4  SpeedStor
+					c  W95 FAT32 (LBA) 53  OnTrack DM6 Aux a0  IBM Thinkpad hi eb  BeOS fs
+					e  W95 FAT16 (LBA) 54  OnTrackDM6      a5  FreeBSD         ee  GPT
+					f  W95 Ext'd (LBA) 55  EZ-Drive        a6  OpenBSD         ef  EFI (FAT-12/16/
+					10  OPUS            56  Golden Bow      a7  NeXTSTEP        f0  Linux/PA-RISC b
+					11  Hidden FAT12    5c  Priam Edisk     a8  Darwin UFS      f1  SpeedStor
+					12  Compaq diagnost 61  SpeedStor       a9  NetBSD          f4  SpeedStor
+					14  Hidden FAT16 <3 63  GNU HURD or Sys ab  Darwin boot     f2  DOS secondary
+					16  Hidden FAT16    64  Novell Netware  af  HFS / HFS+      fb  VMware VMFS
+					17  Hidden HPFS/NTF 65  Novell Netware  b7  BSDI fs         fc  VMware VMKCORE
+					18  AST SmartSleep  70  DiskSecure Mult b8  BSDI swap       fd  Linux raid auto
+					1b  Hidden W95 FAT3 75  PC/IX           bb  Boot Wizard hid fe  LANstep
+					1c  Hidden W95 FAT3 80  Old Minix       be  Solaris boot    ff  BBT
+					1e  Hidden W95 FAT1
+
+
+
+					# ------------------------------------------------------------------------------
+
+					# In the following example, the /dev/sda6 partition is changed to 82, a swap partition, using the same steps described above.
+						Command (m for help): t
+						Partition number (1-6): 6
+						Hex code (type L to list codes): 82
+						Changed system type of partition 6 to 82 (Linux swap / Solaris)
+
+					# It is always a good idea to double-check the new Id by printing the partition table:
+						Command (m for help): p
+
+						Disk /dev/sda: 11.3 GB, 11261706240 bytes
+						255 heads, 63 sectors/track, 1369 cylinders, total 21995520 sectors
+						Units = sectors of 1 * 512 = 512 bytes
+						Sector size (logical/physical): 512 bytes / 512 bytes
+						I/O size (minimum/optimal): 512 bytes / 512 bytes
+						Disk identifier: 0x000ee7d2
+
+						Device Boot      Start         End      Blocks   Id  System
+						/dev/sda1   *        2048     1026047      512000   83  Linux
+						/dev/sda2         1026048    20971519     9972736   8e  Linux LVM
+						/dev/sda3        20971520    21176319      102400   83  Linux
+						/dev/sda4        21176320    21995519      409600    5  Extended
+						/dev/sda5        21178368    21383167      102400   83  Linux
+						/dev/sda6        21385216    21995519      305152   82  Linux swap / Solaris
+			}
+		}
+
+		20.3.5 Saving Changes{
+			# If the changes that have been made to the in-memory partition table are correct, commit changes to disk with w, followed by Enter. The fdisk utility will write the in-memory changes to the actual MBR and exit. However, it is also possible to quit the fdisk utility without making any changes to the disk by using the q command.
+
+			# Note the following possible error after saving changes ( in terminal):{
+				The partition table has been altered!
+
+				Calling iotctl() to re-read partition table.
+
+				WARNING: Re-reading the partition table failed with error 16: Device or resource busy.
+				The kernel still uses the old table. The table will be used at the next reboot or after you run partprobe(8) or kpartx(8)
+				Syncing disks.
+			}
+
+			# This error is the result of the kernel being unable to read the new partition table into memory from the MBR, something that the ioctl() function is responsible for. As mentioned in the output of this error, the partprobe or kpartx command can be executed to fix this issue if these commands are installed on the system. If not, then the system will need to be rebooted before the new partitions can be used.
+		}
+
+		20.3.6 The sfdisk Command{
+			# There is a scriptable fdisk-like program called sfdisk. Not only can this program be used to automate partitioning, it is also capable of backing up and restoring the current partition table.
+
+			# To back up the partition table, first, determine the names of the disk devices. The sfdisk command will list the disk(s) and their sizes when provided the -s option. If the system contained only one 500 GB disk, then the output of the command may appear something like the following, with the pathname of the device and its size:
+
+			in terminal{
+				root@localhost:~# sfdisk -s
+				/dev/sda:   500088608
+
+				# ----------------------------------------------
+				
+				# Before partitioning the disk, it would be a good idea to back up the current partition table data by using the -d option to the sfdisk command:
+				
+				root@localhost:~# sfdisk -d /dev/sda > sda.disk
+
+				# In the event that a mistake is made while using partition editing tools, the partition table can be restored to the original partition table by executing the sfdisk command with the -f option:
+
+				root@localhost:~# sfdisk -f /dev/sda < sda.disk
+
+				# Beware that using the wrong file may corrupt the partition table, which could result in a total loss of data.
+			}
+		}
+
+		20.4 Managing GPT{
+			# Some hard drives make use of a partitioning technology called Master Boot Record (MBR) while others make use of a partitioning type called GUID Partitioning Table (GPT). The MBR type of partitioning has been used since the early days of the personal computer (PC), and the GPT type has been available since the year 2000.
+
+			# The GPT disks use a newer type of partitioning, which allows the user to divide the disk into more partitions than what MBR supports. GPT also allows having partitions, which can be larger than two terabytes (MBR does not). The tools for managing GPT disks are named similarly to the fdisk counterparts: the gdisk, cgdisk, and sgdisk programs.
+		}
+
+		20.4.1 Managing GPT{
+			To create and manage GPT partitions from the command line, you can use the gdisk utility, also called GPT fdisk. It operates in a similar fashion to fdisk except it operates on GPT partitions and requires the device to be specified in order to work.
+
+			in terminal{
+				sysadmin@localhost:~$ sudo gdisk /dev/sdb1
+				GPT fdisk (gdisk) version 1.0.3
+
+				Partition table scan:
+				MBR: not present
+				BSD: not present
+				APM: not present
+				GPT: not present
+
+				Creating new GPT entries.
+
+				Command (? for help): ?
+				b	back up GPT data to a file
+				c	change a partition's name
+				d	delete a partition
+				i	show detailed information on a partition
+				l	list known partition types
+				n	add a new partition
+				o	create a new empty GUID partition table (GPT)
+				p	print the partition table
+				q	quit without saving changes
+				r	recovery and transformation options (experts only)
+				s	sort partitions
+				t	change a partition's type code
+				v	verify disk
+				w	write table to disk and exit
+				x	extra functionality (experts only)
+				?	print this menu
+			}
+
+			### When you specify a blank disk, it will scan the device and report back no partition information. Typing a question mark ? character returns a list of command options available, type n to add a new partition.
+
+			in terminal{
+				Command (? for help): n
+				Partition number (1-128, default 1):
+				First sector (34-62529502, default = 2048) or {+-}size{KMGTP}:
+				Last sector (2048-62529502, default = 62529502) or {+-}size{KMGTP}:
+				Current type is 'Linux filesystem'
+				Hex code or GUID (L to show codes, Enter = 8300):
+				Changed type of partition to 'Linux filesystem'
+			}
+
+			### It returns information about the new partition that was just created; you can also type p to print the partition table information.
+
+			in terminal{
+				Command (? for help): p
+				Disk /dev/sdb1: 62529536 sectors, 29.8 GiB
+				Sector size (logical/physical): 512/512 bytes
+				Disk identifier (GUID): 78F1C87E-5159-4AD8-89BA-A5F79B854835
+				Partition table holds up to 128 entries
+				Main partition table begins at sector 2 and ends at sector 33
+				First usable sector is 34, last usable sector is 62529502
+				Partitions will be aligned on 2048-sector boundaries
+				Total free space is 2014 sectors (1007.0 KiB)
+
+				Number Start (sector) End (sector) Size Code Name
+				1 2048 62529502 29.8 GiB 8300 Linux filesystem
+			}
+
+			### The v command will verify the partition to ensure it is free from errors.
+
+			in terminal{
+				Command (? for help): v
+
+				No problems found. 2014 free sectors (1007.0 KiB) available in 1
+				segments, the largest of which is 2014 (1007.0 KiB) in size.
+			}
+
+			### The o command allows you to create a new empty partition; it verifies that you want to delete existing partitions before proceeding.
+
+			in terminal{
+				Command (? for help): o
+				This option deletes all partitions and creates a new protective MBR.
+				Proceed? (Y/N): y
+			}
+
+			### The p command again prints information about the new partition.
+
+			in terminal{
+				Command (? for help): p
+				Disk /dev/sdb1: 62529536 sectors, 29.8 GiB
+				Sector size (logical/physical): 512/512 bytes
+				Disk identifier (GUID): 4876B7C5-0ADB-4281-AA77-A3FFAEC5F2AF
+				Partition table holds up to 128 entries
+				Main partition table begins at sector 2 and ends at sector 33
+				First usable sector is 34, last usable sector is 62529502
+				Partitions will be aligned on 2048-sector boundaries
+				Total free space is 62529469 sectors (29.8 GiB)
+
+				Number Start (sector) End (sector) Size Code Name
+			}
+
+			### The w command writes the partition data to the disk and will exit. Once again, it verifies that you want to proceed with overwriting (deleting) the existing partitions.
+
+			in terminal{
+				Command (? for help): w
+
+				Final checks complete. About to write GPT data. THIS WILL OVERWRITE EXISTING
+				PARTITIONS!!
+
+				Do you want to proceed? (Y/N): y
+				OK; writing new GUID partition table (GPT) to /dev/sdb1.
+				Warning: The kernel is still using the old partition table.
+				The new table will be used at the next reboot or after you
+				run partprobe(8) or kpartx(8)
+				The operation has completed successfully.
+			}
+		}
+
+		20.5 GNU Parted{
+			# So far, you have learned to use the fdisk and gdisk commands to create, list, and delete partitions. Another available tool for creating and resizing partitions on a hard drive is the GNU Parted program. The GNU Parted program includes the parted command line tool and the gparted graphical interface tool. One benefit of using GNU Parted is that unlike the gdisk and fdisk tools, which are destructive partitioners, GNU Parted will non-destructively resize a partition as well as the filesystem on top of it.
+
+			# The parted program can be used in two ways: command line mode and interactive mode. When using parted in either mode, a device must be specified. To do this, the following syntax must be used:
+
+			syntax{
+				parted DEVICE
+			}
+
+			# The DEVICE argument is used to specify the hard drive to modify, for instance, /dev/sdb. If this argument is not used, a default device will be chosen for you, or an error message may be displayed. To use parted in command line mode, the DEVICE argument must be followed by options to create or modify a partition. To see a list of options available for parted, use the --help option:
+
+			in terminal{
+				root@localhost:~# parted --help
+				Usage: parted [OPTION]... [DEVICE [COMMAND [PARAMETERS]...]...]
+				Apply COMMANDs with PARAMETERS to DEVICE.  If no COMMAND(s) are given, run in
+				interactive mode.
+
+				OPTIONs:
+				-h, --help                      displays this help message
+				-l, --list                      lists partition layout on all block devices
+				-m, --machine                   displays machine parseable output
+				-s, --script                    never prompts for user intervention
+				-v, --version                   displays the version
+				-a, --align=[none|cyl|min|opt]  alignment for new partitions
+
+				COMMANDs:
+				align-check TYPE N                        check partition N for TYPE(min|opt)
+						alignment
+				help [COMMAND]                           print general help, or help on
+						COMMAND
+				mklabel,mktable LABEL-TYPE               create a new disklabel (partition
+						table)
+				mkpart PART-TYPE [FS-TYPE] START END     make a partition
+				name NUMBER NAME                         name partition NUMBER as NAME
+				print [devices|free|list,all|NUMBER]     display the partition table,
+						available devices, free space, all found partitions, or a particular partition
+				quit                                     exit program
+				rescue START END                         rescue a lost partition near START
+						and END
+				resizepart NUMBER END                    resize partition NUMBER
+				Output Omitted...
+			}
+
+			# To view the disks on the system, use the lsblk command:
+
+			in terminal{
+				root@localhost:~# lsblk
+				NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT
+				sda    8:0    0 3.7T  0 disk
+				|-sda1 8:1    0 512M  0 part
+				|-sda2 8:2    0 3.5T  0 part /etc/hosts
+				`-sda3 8:3    0 128G  0 part [SWAP]
+				sdb   8:16    0 20G  0  disk
+			}
+
+			# The sdb disk noted in the output above is the target device for the partitioning examples below. It is an empty disk that is the second device on the IDE device bus.
+
+			# Next, to view any existing partition information with the parted command, use the following:
+
+			in terminal{
+				root@localhost:~# parted /dev/sdb print
+				Model: ATA VMware Virtual I (scsi)
+				Disk /dev/sdb: 21.5GB
+				Sector size (logical/physical): 512B/512B
+				Partition Table:
+				Disk Flags:
+
+				Number  Start  End  Size  Type  File system  Flags
+			}
+
+			# To make the disk partitionable, a disklabel (partition table) must be created. This is done with the following command:
+
+			in terminal{
+				root@localhost:~# parted /dev/sdb mklabel msdos
+				You may need to update the /etc/fstab
+			}
+
+			### ## If a disk has an existing partition table, the command may query the user about overwriting the current partition table, and in that case, the user would type the Y key and then press Enter.
+
+			# Now that a partition table is written to the disk, partitions can be created on the disk. To create a primary partition that takes up the first 50% of the disk, use the following command:
+
+			in terminal{
+				root@localhost:~# parted /dev/sdb mkpart primary 0% 50%
+				You may need to update the /etc/fstab
+			}
+
+			# Once the command executes, the user can verify the partition was created with the command:
+
+			in terminal{
+				root@localhost:~# parted /dev/sdb print
+				Model: ATA VMware Virtual I (scsi)
+				Disk /dev/sdb: 21.5GB
+				Sector size (logical/physical): 512B/512B
+				Partition Table:
+				Disk Flags:
+
+				Number  Start    End      Size    Type     File system  Flags
+				1       1049kB   10.7GB   10.7GB  primary
+			}
+
+			# While it is possible to format the resulting partition with a filesystem during the parted mkpart process, experience has indicated that the partitioning process is best done by parted and the creation of a filesystem by the appropriate mkfs command.
+
+			# The parted utility’s interactive mode can also be used to create or resize partitions. To begin using interactive mode, simply use the parted command with a device argument to specify the drive:
+
+			in terminal{
+				root@localhost:~# parted  /dev/sdb
+				GNU Parted 3.2
+				Using /dev/sda
+				Welcome to GNU Parted! Type ‘help to view a list of commands.
+				(parted)
+			}
+
+			# Note in the example above that the prompt will change to (parted). The h command will display a menu or help screen:
+
+			in terminal{
+				(parted) h
+				align-check TYPE N                        check partition N for TYPE(min|opt) alignment
+				help [COMMAND]                           print general help, or help on COMMAND
+				mklabel,mktable LABEL-TYPE               create a new disklabel (partition table)
+				mkpart PART-TYPE [FS-TYPE] START END     make a partition
+				name NUMBER NAME                         name partition NUMBER as NAME
+				print [devices|free|list,all|NUMBER]     display the partition table, available devices,
+				free space, all found partitions, or a particular partition
+				quit                                     exit program rescue START END rescue a lost
+				partition near START and END
+				resizepart NUMBER END                    resize partition NUMBER
+				rm NUMBER                                delete partition NUMBER
+				select DEVICE                            choose the device to edit
+				disk_set FLAG STATE                      change the FLAG on selected device
+				disk_toggle [FLAG]                       toggle the state of FLAG on selected device
+				set NUMBER FLAG STATE                    change the FLAG on partition NUMBER
+				toggle [NUMBER [FLAG]]                   toggle the state of FLAG on partition NUMBER
+				uni5 UNIT				      set the default unit to UNIT
+				version				      display the version number and copyright information of Gnu Parted
+			}
+
+			## Notice that many of the commands used in command line mode such as the mkpart, mklabel, and print commands are available in the interactive mode. The process of creating and modifying partitions using parted in interactive mode is similar to using fdisk or gdisk in interactive mode.
+		}
+
+		20.6 Logical Volume Management{
+			# Logical Volume Management (LVM) is a method of managing hard disk space that provides more flexibility than traditional partitioning of disks. LVM was developed specifically to address some of the limitations of traditional partitioning
+		}
+
+		20.6.1 LVM Concepts{
+			# The steps to implement LVM include the following:
+
+				1. Connect the physical devices to the system.
+
+				2. Use pvcreate to convert the desired devices into physical volumes, which will allocate them for inclusion in the LVM scheme. This will write a header to the physical device and make them visible to the LVM process.
+
+				3. Use vgcreate to incorporate all of the desired physical volumes into a virtual collection called a volume group. The volume group now will act as a multi-disk equivalent of a physical volume on which partitioning can occur.
+				
+				4. Use lvcreate to create the LVM version of disk partitions (called logical volumes) in the volume group created previously. The logical volumes act like partitions in that the user can create filesystems on them, mount them, and in general use them as a traditional partition.
+
+			# At this point, they are just three hard drives that don't have anything on them, including a partition table. To use these as part of LVM, first execute the pvcreate command on each one:
+
+			in terminal{
+				root@localhost:~# pvcreate /dev/sdb
+				root@localhost:~# pvcreate /dev/sdc
+				root@localhost:~# pvcreate /dev/sdd
+			}
+
+			# Initially, these hard drives won't appear to be any different. However, there is now a small block of data, called a header, in the very beginning of each that defines each device as a physical volume.
+
+			# The next step is to create a volume group that consists of these three physical volumes. This can be accomplished with the following command:
+
+			in terminal{
+				root@localhost:~# vgcreate vol1 /dev/sdb /dev/sdc /dev/sdd
+			}
+
+			# Any of the space in the vol1 volume group can be used to create a logical volume with a command like the following:
+
+			in terminal{
+				root@localhost:~# lvcreate -L 200M -n logical_vol1 vol1
+			}
+
+			# The -L option is used to specify the size of the logical volume. The value of 200M means create a 200MB logical volume. The -n option is used to provide a name to the logical volume. The resulting name of the logical volume created by the previous command will be logical_vol1. The last argument, vol1, is the name of the volume group from where the logical volume will obtain its physical space. The previous lvcreate command would result in a new device name of /dev/vol1/logical_vol1 that could be used just like a traditional partition.
+		}
+
+		20.7 Creating a Filesystem{
+			# If the fdisk command is used to create a partition, then the filesystem will have to be created separately.
+
+			# The mkfs command can be used to create a filesystem. To make a vfat type filesystem, which is compatible with multiple operating systems, including Microsoft Windows, execute the command like the following:
+
+			in terminal{
+				root@localhost:~# mkfs -t vfat /dev/sdb1
+			}
+
+			# The mkfs command is a wrapper that executes another command, which will actually make the correct filesystem. When provided the -t vfat option, the mkfs command will call the mkdosfs command to make the actual filesystem. This is important to know because the mkfs command provides generic options while the underlying command may have options specific to the filesystem that it creates. Consult the documentation, such as the man pages, to see these additional options.
+
+			# A very common filesystem is the Fourth Extended Filesystem, ext4, the default filesystem on many Linux distributions. To create this type of filesystem, execute a command like the following:
+
+			in terminal{
+				root@localhost:~# mkfs -t ext4 /dev/sdb1
+			}
+
+			# For example, the mke2fs command has several options that will modify how the filesystem will behave after it has been created. Some of these features can be changed after the filesystem has been created, but others cannot. The following table describes a few of the common features that a system administrator may change for ext2/etx3/ext4 filesystems:
+
+				Option 		Description
+				-b 			Specifies the block size of the filesystem. While the default is typically fine for normal filesystems, for filesystems with large databases, a larger block size is more ideal.
+				
+				-N 			Specifies the number of inodes. Recall that each file needs an inode, so this value is an important one. By default, the mke2fs command uses a formula based on filesystem size to determine how many inodes to create.
+							Typically, this generates a huge number of inodes, which on filesystems with only a handful of large files results in wasted spaces since these inodes take space even if they are not in use.
+							The number of inodes can't easily be changed after the filesystem has been created.
+				
+				-m 			Specifies what percentage of the filesystem is reserved for system use. Consider the partial output of the df command shown below:
+							in terminal{
+								Filesystem  Size  Used  Avail Use% Mounted on
+								/dev/sda2   485M  114M  346M  25%  /
+							}
+							There appears to be something wrong with this output. If 114M of a 485M filesystem is used, then there should be 368M available, not 346M! Also, the Use%, which displays how much space has been used, is inaccurate. It should be closer to 23%.
+							The reason why these numbers are inaccurate is that 5% of the filesystem is reserved for system use. Regular users can't use this space, so it is considered to be unavailable; as a result, the df command takes that into consideration when reporting available space.
+							To specify a different percentage of reserved space, use the -m option. This is a useful option for filesystems that the root user doesn't typically use, like the /home filesystem.
+		}
+
+		20.8 exFAT{
+			# From the command line, you will need to make sure the proper repository, in this case, the universe repository, is installed. To ensure that the repository is installed, the add-apt command can be used. In the example below, the output of the add-apt command establishes that the repository is already present on the system. However, if it was not, the add-apt command could be used to install it:
+			
+			in terminal{
+				sysadmin@localhost:~$ sudo add-apt-repository universe
+				[sudo] password for sysadmin:
+				'universe' distribution component is already enabled for all sources.
+			}
+
+			## A repository is a collection of data stored on a server. In Linux, repositories are used to store system updates and applications that can be downloaded.
+				The add-apt command is part of the Advanced Package Tool (APT) used for package management.
+
+				Repositories and package management are covered in greater detail later in the course.
+			
+			# Next, the apt update command can be used to confirm that everything in the repository is up-to-date:
+
+			in terminal{
+				sysadmin@localhost:~$ sudo apt update
+				Hit:1 http://us.archive.ubuntu.com/ubuntu cosmic InRelease
+				Get:2 http://us.archive.ubuntu.com/ubuntu cosmic-updates InRelease [88.7 kB]
+				Get:3 http://us.archive.ubuntu.com/ubuntu cosmic-security InRelease [88.7 kB]
+				Hit 4: http://us.archive.ubuntu.com/ubuntu cosmic-backports InRelease
+				Fetched 177 kB in 1s (139 kB/s)
+				Reading package lists… Done
+				Building dependency tree
+				Reading state information… Done
+				11 packages can be upgraded. Run ‘apt list —upgradable’ to see them.
+			}
+		}
+
+		20.9 BTRFS{
+			# BTRFS (sometimes pronounced b-tree FS or butter FS) is a Linux native filesystem created by Oracle and developed by multiple companies as well as many individual contributors to address the limitations of previous filesystems.
+		
+			Copy-On-Write{
+				# BTRFS is a copy-on-write (COW) system. While a complex technical feature, the main point of copy on write is that BTRFS will not overwrite an existing file with updates, which traditional non-COW filesystems do routinely.
+			
+				# For example, if you have a file named datafile1.txt and you make updates to the file’s contents, on a traditional non-COW filesystem, the file would be overwritten with the new data, making retrieval of the original version of the file something that could only be done by restoring from backup. Instead of BTRFS overwriting datafile1.txt, it will leave that file in place, untouched, and writes the new or changed portions of the file elsewhere, and then changes the file’s metadata to encompass the change.
+
+				# Copy-on-write is one reason why BTRFS has a significant advantage of recovery time from hardware failure, power outage, or other forms of catastrophe. The original version of the file will remain intact, and continue to be available even as follow-on versions or changes are written elsewhere. This has the added benefit of acting as a journal of sorts because transactions (updates) are either completed or not, and if not, the already written to disk portions of the file are safe and sound on disk.
+			}
+		}
+
+		20.10 Creating Swap Space{
+			There are two types of swap spaces that can be created:{	
+
+				1. Swap Partition: The more common of the two, a swap partition is a partition that doesn't have a regular filesystem on it, and is not mounted. During installation, a swap partition is created, but additional swap partitions can be created at a later time.
+
+				2. Swap File: In the event that there is no unpartitioned space left on the hard drive, a swap file can be used. Swap partitions are typically faster than swap files as they are a filesystem, not a file, that is located on top of another filesystem. Swap files are more flexible and can be created on the fly without the need to repartition the hard drive.
+
+			}
+		}
+
+		20.10.1 Creating a Swap Partition{
+			The steps to creating a swap partition are:{
+				1. Create a partition with an Id of 82 using fdisk as previously described:
+					in terminal{
+						Command (m for help): n
+						Command Action
+						e   extended
+						p   primary partition (1-4)
+						p
+						Partition number (1-4): 3
+						First sector (20971520-21995519, default 20971520):
+						Using default value 20971520
+						Last sector, +sectors, or +size{K,M,G} (20971520-21995519, default 21995519): +100
+
+						Command (m for help): t
+						Partition number (1-6): 3
+						Hex code (type L to list codes): 82
+						Changed system type of partition 3 to 82 (Linux swap / Solaris)
+					}
+
+				2. Convert the partition to swap space with the mkswap command.
+					in terminal{
+						root@localhost:~# mkswap /dev/sda3
+						Setting up swapspace version1, size = 102396 KiB
+						no label, UUID=59aaf06e-7109-471f-88a5-e81dd7c82d76
+					}
+				
+				3. Enable the partition as current swap space with the swapon command:
+					in terminal{
+						root@localhost:~# swapon /dev/sda3
+					}
+			}
+
+			### The -s option to the swapon command will display currently used swap space:
+
+			in terminal{
+				root@localhost:~# swapon -s
+				Filename                                Type            Size    Used    Priority
+				/devdm-1                                partition       1015800 0       -1
+				/dev/sda3                               partition       102392  0       -2
+			}
+		}
+
+		20.10.2 Creating a Swap File{
+			The steps to create a swap file:{
+				1. Create a large file using the dd command. In order to determine which filesystem has room for the swap file, the df command was executed. The / filesystem has plenty of room, so the swap file was placed in the /var directory:
+					in terminal{
+						root@localhost:~# df -h
+						Filesystem      Size  Used Avail Use% Mounted on
+						/dev/sda9        58G  7.7G   49G  14%
+						tmpfs           7.9G     0  7.9G   0% /dev
+						shm              64M     0   64M   0% /dev/shm
+						/dev/sda9        58G  7.7G   49G  14% /etc/hosts
+						root@localhost:~# dd if=/dev/zero of=/var/extraswap bs=1M count=100
+						100+0 records in
+						100+0 records out
+						104857600 bytes (105 MB) copied, 0.320096 s, 328 MB/s
+					}
+					# Note that the resulting file is approximately 100MB in size, 100 blocks of 1MB in size. The options bs=100M and count=1 would have resulted in the same size. The file is full of binary zero values that came from the /dev/zero file. What is actually in the file doesn't really matter; the size of the file is what is important.
+			
+				2. Convert the file to swap space with the mkswap command:
+					in terminal{
+						root@localhost:~# mkswap /var/extraswap
+						Setting up swapspace version 1, size = 102396 KiB
+						no label, UUID=908e51f8-a022-4508-8819-73e1d8837e2b
+					}
+				
+				3. Enable the file as current swap space with the swapon command:{
+					root@localhost:~# swapon /var/extraswap
+					root@localhost:~# swapon -s
+					Filename                                Type            Size    Used    Priority
+					/devdm-1                                partition       1015800 0       -1
+					/dev/sda3                               partition       102392  0       -2
+					/var/extraswap                          file            102392  0       -3
+				}
+			}
+		}
+
+		key terms{
+
+			fdisk
+				Command used to manipulate the MBR partition table for Linux. This utility can be used to create, modify, and delete partitions for a fixed disk.
+				Section 20.3 | Section 20.3.1 | Section 20.3.2 | Section 20.3.3 | Section 20.3.4 | Section 20.3.5 
+			gdisk
+				An interactive GPT partition table manipulator. It will automatically covert the old-style MBR partition toable to the GPT format.
+				| Section 20.4 | Section 20.4.1 
+			mke2fs
+				Command used to create an ext2/ext3/ext4 filesystem. This usually corresponds to a device such as a hard drive.
+				Section 20.7 
+			mkfs
+				Command used to build a Linux file system on a device. mkfs.fstype is also available to create a specific file system with ease. For example an adminsitrator can use mkfs.ext4 to build an ext4 file system.
+				Section 20.7 
+			mkswap
+				Command used to build a Linux swap area. A device argument will be need to specify where the swap area will be created.
+				Section 20.10.1 | Section 20.10.2 
+			parted
+				A disk partitioning and partition resizing utility. It allows an administrator to destroy, create, resize, move, and copy ext2, linux-swap, FAT, and FAT32.
+				Section 20.5 
+			swap space
+				Used when the amount of physical memory (RAM) is full. If the system needs more memory resources and the RAM is full, inactive pages in memory are moved to the swap space.
+				| Section 20.10 | Section 20.10.1 | Section 20.10.2 
 		}
 	}
 }
