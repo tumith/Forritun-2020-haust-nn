@@ -3078,4 +3078,239 @@ chapter 19 and 20{
 				| Section 20.10 | Section 20.10.1 | Section 20.10.2 
 		}
 	}
+
+	chapter 21{
+		21.2 Viewing Mounted Filesystems{
+			# Mounting of partitions and checking on existing mounts is accomplished with the mount command. When called with no arguments, the mount command shows the currently mounted devices. This can be performed by regular users, not just the root user
+
+			in terminal{
+				sysadmin@localhost:~$ mount
+				/dev/sda2 on / type ext4 (rw)
+				proc on /proc type proc (rw)
+				sysfs on /sys type sysfs (rw)
+				devpts on /dev/pts type devpts (rw,gid=5,mode=620)
+				tmpfs on /dev/shm type tmpfs (rw)
+				/dev/sda1 on /boot type ext4 (rw)
+				/dev/sda5 on /home type ext4 (rw)
+				none on /proc/sys/fs/binfmt_misc type binfmt_misc (rw)
+				sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs
+			}
+
+			The general format of this output is:{
+				DESCRIPTION OF SOURCE on MOUNT POINT type FILESYSTEM TYPE (OPTIONS)
+			}
+
+			Description of Source{
+				{
+					/dev/sda5 on /home type ext4 (rw)
+					---------
+
+					proc on /proc type proc (rw)
+					----
+				}
+				# Every mounted filesystem comes from a source—either a device representing a disk, a network location for a network filesystem, or a tag indicating a pseudo-filesystem. This latter class (which includes proc, sysfs, devpts, tmpfs, none, and sunrpc in the output above) is the Linux kernel's way of sharing information with the real filesystem. For example, the proc filesystem exposes the process list and system configuration as a set of files that can be read and written to. 
+			}
+
+			Mount Point{
+				{
+					/dev/sda2 on / type ext4 (rw)
+								 -
+					
+					/dev/sda5 on /home type ext4 (rw)
+								 -----
+				}
+				# The mount point shows where the source can be found on the filesystem. The output above indicates that the root / filesystem is actually served from the /dev/sda2 partition, but files in the /home directory are stored on the /dev/sda5 partition.
+			}
+
+			Filesystem Type{
+				{
+					/dev/sda5 on /home type ext4 (rw)
+											----
+					
+					proc on /proc type proc (rw)
+									   ----
+				}
+				# Each filesystem has a type, which tells the kernel how to work with the data contained on the device. For actual filesystems like the xfs, ext4, and reisferfs filesystems, this relates the blocks stored on disk to the files and directories that you see. For network filesystems like the nfs filesystem, this translates the network calls and packets sent and received into disk reads and writes. For the pseudo-filesystems, the filesystem type describes what kind of resources are exposed.
+			}
+
+			Options{
+				{
+					/dev/sda5 on /home type ext4 (rw)
+												 ----
+					
+					devpts on /dev/pts type devpts (rw,gid=5,mode=620)
+												   -------------------
+				}
+				# Each filesystem also has options. Some options, such as the read/write rw option and read-only ro option, are fairly universal. Some filesystems have options corresponding to specific items such as the network timeout parameters for a network filesystem or the journalling parameters for a journaled filesystem.
+
+				# Administrators generally work with disk drives and network filesystems, leaving the pseudo filesystems for the distribution to set up and manage. The disks may take many forms such as individual disk partitions, logical disks made up of multiple disks (such as LVM), or even other hardware that presents itself as a disk (such as RAID).
+
+				# Another method for getting information about filesystems is by using the lsblk command. The lsblk command lists information about block devices, either all of the ones that are available with the -a option, or output can be tailored with various other options such as the -f option, which outputs information about available filesystems.
+
+				in terminal{
+					sysadmin@localhost:/$ lsblk -a
+					NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+					loop0    7:0    0        0 loop
+					loop1    7:1    0        0 loop
+					loop2    7:2    0        0 loop
+					loop3    7:3    0        0 loop
+					loop4    7:4    0        0 loop
+					loop5    7:5    0        0 loop
+					loop6    7:6    0        0 loop
+					loop7    7:7    0        0 loop
+					sda      8:0    0  3.7T  0 disk
+					|-sda1   8:1    0  512M  0 part
+					|-sda2   8:2    0  3.5T  0 part /etc/hosts
+					`-sda3   8:3    0  128G  0 part [SWAP]
+					sdb      8:16   1        0 disk
+					sdc      8:32   1        0 disk
+					sr0     11:0    1 1024M  0 rom
+					sr1     11:1    1 1024M  0 rom
+					sysadmin@localhost:/$ lsblk -f
+					NAME   FSTYPE LABEL UUID MOUNTPOINT
+					sda
+					|-sda1
+					|-sda2                   /etc/hosts
+					`-sda3                   [SWAP]
+					sr0
+					sr1 
+				}
+			}
+		}
+
+		21.3 Mounting Filesystems Manually{
+			# In order to properly mount a filesystem, at least two parameters must be provided to the mount command: the filesystem identifier and the directory path name to mount it on. If no other options are needed, the mount command will mount the filesystem on the specified directory mount point. 
+			
+			!!! Unless set up in the /etc/fstab file beforehand, mounting requires root user access.
+
+			in terminal{
+				root@localhost:~# mount /dev/sdb1 /mnt
+			}
+			# The first step to mounting a filesystem is to create a directory to serve as a mount point. Alternatively, the /mnt and /media directories may be used, which usually exist by default on most Linux distributions for this purpose. The /mnt and /media directories are typically only used to mount a temporary resource such as removable media, including USB drives and optical disks. Some desktop-oriented distributions will automatically mount removable devices under the /media/USERNAME/DEVICENAME directory.
+
+			# The easiest form of the manual mount command is shown above. In this situation, the Linux kernel understands that /dev/sdb1 is a filesystem and can even detect what kind of filesystem is on the disk. If the filesystem cannot be detected, then use the -t option to indicate the type of filesystem:
+
+			in terminal{
+				root@localhost:~# mount -t iso9660 /dev/scd0 /mnt
+			}
+			# This last command mounts a device called /dev/scd0 on /mnt and tells the kernel to use the iso9660 filesystem, which is for CD and DVD devices. If it is necessary to tell the kernel what kind of filesystem is being used, then this should be a sign that something is amiss as the autodetection is generally reliable.
+
+			# When a filesystem is mounted, the default options for that filesystem are used. The -o option can be used to specify alternative mount options from the command line. Some mount options are only used when manually mounting a filesystem, while others are commonly used when automatically mounting a filesystem.
+
+			# To mount a filesystem read-only, pass the ro option, such as
+			in terminal:{
+				root@localhost:~# mount /dev/sdb2 /opt -o ro
+			}
+
+			Consider This{
+				# Mounting a filesystem on a directory that already contains files will render those files temporarily inaccessible. Therefore be careful to mount on directories known to be empty.
+
+				# Once a filesystem is mounted on a directory, only the contents of that filesystem will be visible. What was previously visible in a directory is not gone, but will become visible only after the new filesystem is unmounted.
+
+				# For example, consider the situation in which the /data directory already contains files and then it is used as a mount point:
+				in terminal{
+					root@localhost:~# ls /data
+					file1 file2
+					root@localhost:~# mount /dev/sda3 /data
+					root@localhost:~# ls /data
+					file3 file4
+				}
+
+				# It appears that file1 and file2 were deleted, but they are just hidden from view. If the filesystem was unmounted, then these files would reappear:
+				in terminal{
+					root@localhost:~# ls /data
+					file3 file4
+					root@localhost:~# umount /data
+					root@localhost:~# ls /data
+					file1 file2
+				}
+			}
+		}
+	}
+
+
+	Ch22: Maintaining the integrity{
+		in class{
+			1- to maintain the intergrity of filesystem you need to monitor it
+
+			- you need to monitor the data block space and free inodes.
+
+			- df command will display filesystem usage
+
+				df -h
+
+				df -s
+
+				df -i
+
+			- du command shows the file size 
+
+				du | sort -n
+
+				du | sort -n | tail -10
+
+				du -h //human readable output
+
+				du -sh /bin /usr/bin
+
+
+
+			2- most common causes of filesystem damage is:
+
+				- shuting down the system improperly. init 0 init 6 systemctl poweroff
+
+													systemctl reboot
+
+
+			When a partition or disk is formatted, the sectors in the hardisk is first divided into small groups. 
+
+			This groups of sectors is called as blocks. The block size is something that can be specified when a user formats a partition using the command line parameters available
+				
+		}
+	}
+
+	Ch23: Fixing File system with fsck{
+
+		in class{
+			1- you need to backup your files regularly 
+
+			2- Power outages may also cause file corruption, that is way somtimes we need UPSs on 
+
+				critical systems
+			
+			So to check the filesystem use fsck command
+
+			-fsck is the front end of back end command like e2fsck 
+
+			man fsck.vfat
+
+			man fsck.ext4 lead to e2fsck
+			
+			- it is not importent to know what back end command to use simply use fsck
+
+			fsck <path>
+			
+			- If fsck command runs on the monted filesystem the following error will apear
+
+
+			fsck -y //yes to all options
+
+			fsck -f //force the check the filesystem
+
+
+			dumpe2fs /dev/sdb1 | grep superblock
+
+			e2fsck -b <number> /dev/sdb1
+
+			clearman 
+			
+			3 lost+found Directory
+
+			if the fsck produces any unreferenced file errors, you need to check the lost+found directory
+
+			ls -l /dev/sdb1/lost+found
+			
+			file command can be used to determine the type of file, and view the contents.
+		}		
+	}
 }
