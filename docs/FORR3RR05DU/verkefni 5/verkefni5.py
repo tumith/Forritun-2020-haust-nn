@@ -122,6 +122,9 @@ print('\n',dbl.find(3))
 
 """
 dbl = DLL()
+dbl.find(2)
+dbl.printList()
+print('\n')
 dbl.append(5)           # 5
 dbl.append(7)           # 5 7         
 dbl.push(1)             # 1 5 7 
