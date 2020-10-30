@@ -6,7 +6,7 @@ MEANING OF THINGS
 
 	!!!! = Warnings
 
-	# = command
+	# = command or just comments
 
 	## = interesting
 
@@ -3225,6 +3225,529 @@ chapter 19 and 20{
 					file1 file2
 				}
 			}
+		}
+
+		21.4 Unmounting Filesystems Manually{
+			# To maximize performance, Linux keeps parts of the filesystem in memory. If media, such as USB devices, were to be removed before those memory buffers were flushed, some data may not be written to disk. This is known as an “unclean” dismount. This may result in data loss or even filesystem corruption. Unmounting is the procedure used to flush all the buffers and make the disk safe to remove.
+
+			# To unmount a filesystem, use the umount command with either the filesystem or the directory given as an argument. For example, to unmount the /mnt directory that was previously mounted, execute the following command:
+			in terminal{
+				root@localhost:~# umount /mnt
+
+				# Because the /dev/sdb1 filesystem was mounted under the /mnt directory, the following command would have also worked:
+
+				root@localhost:~# umount /dev/sdb1
+			}
+
+			# There are a few instances where the umount command will fail to unmount a filesystem:
+			
+				1. There is a file open that is located within the filesystem. The term open meaning in use by a program. For example, if the file was being edited by a text editor like the vi editor, it would be considered to be open.
+
+				2. There is an executable file running that is located within the filesystem.
+
+				3. A user has a directory within the filesystem as their current working directory.
+			
+			# When the umount command fails to unmount a filesystem, it will normally report that the device is busy
+			in terminal{
+				root@localhost:~# umount /mnt
+				umount: /mnt: device is busy.
+					(In some cases useful info about processes that use
+					the device is found by lsof(8) or fuser(1))
+			}
+			# To determine what is making the filesystem busy, use the lsof or fuser commands
+
+			# The output of the lsof command is the list of all open files on the operating system, which can easily number in the thousands. Therefore, it is important to filter the output of the lsof command to find the correct opened file. A good way to do this is to pipe the output of the lsof command to the grep command. Use the grep command to find the filesystem that should be unmounted. For example, if the /mnt directory was busy, the root user can execute the following command from the /mnt directory:
+			in terminal{
+				root@localhost:/mnt# lsof | grep /mnt
+				bash      2577      root  cwd       DIR        8,1     1024          2 /mnt
+				lsof      2631      root  cwd       DIR        8,1     1024          2 /mnt
+				grep      2632      root  cwd       DIR        8,1     1024          2 /mnt
+				lsof      2633      root  cwd       DIR        8,1     1024          2 /mnt
+			}
+			# The first three columns are most useful: the name of the process, the process ID, and the user running the process. Using the process ID along with the kill command, a system administrator can terminate processes that may be keeping the directory busy
+			!!!! However, be very careful about killing processes that have files open for writing as this may damage files or directories within a filesystem.
+
+			## The fuser command provides much more concise output, and it will indicate if a file is open for writing. It is even able to terminate processes, much like the kill command.
+		
+			## ### The -v option to the fuser command produces slightly more output, including the name of the user who is running the process and a code which indicates the way that a process is using the directory. For example, if unsuccessfully attempting to unmount the /mnt directory, try executing the following fuser command:
+			in terminal{
+				root@localhost:~# fuser -v /mnt
+										USER        PID ACCESS COMMAND
+					/mnt:                root       2529 ..c.. bash
+			}
+			# In this case, the process keeping the /mnt directory busy is being run by the root user. The process id is 2529, the access of c indicates the process is using the directory as its current directory. The process itself is the Bash shell.
+
+			# Access codes that might be reported by the fuser command are:
+				Access Code 	Meaning
+				c 				The process is using the mount point or a subdirectory as its current directory.
+			 	e 				The process is an executable file that resides in the mount point structure.
+				f 				The process has an open file from the mount point structure.
+				F 				The process has an open file from the mount point structure that it is writing to.
+				r 				The process is using the mount point as the root directory.
+				m 				The process is a mmap'ed file or shared library.
+
+			# If the process has a file open for writing or the mount point is a root directory, it is not wise to kill that process. Otherwise, to terminate the process, execute the following command:
+			in terminal{
+				root@localhost:~# fuser -k /mnt
+			}
+
+			# As with the kill command, the default signal sent by the fuser command is the TERM signal. Use the fuser -l command to list the signals that can be used:
+			in terminal{
+				root@localhost:~# fuser -l
+				HUP INT QUIT ILL TRAP ABRT IOT BUS FPE KILL USR1 SEGV USR2 PIPE ALRM TERM STKFLT CHLD CONT STOP TSTP TTIN TTOU URG XCPU XFSZ VTALRM PROF WINCH IO PWR SYS
+			}
+
+			# These are the same signals that are available for the kill command. To send a specific signal with the fuser command, place a hyphen in front of the signal name. For example, to end a stubborn process that is keeping the /mnt directory busy, execute the following command:
+			in terminal{
+				root@localhost:~# fuser -k -KILL /mnt
+			}
+			# Once the process has been terminated, it should be possible to execute the umount command to unmount the filesystem
+		}
+
+		21.5 Mounting Filesystems Automatically On Boot{
+			# Manually mounting filesystems with the mount command results in a non-persistent mount. If the system is rebooted, then the filesystem must be mounted again to be accessed. The same is true for activating swap devices with the swapon command.
+			!!! # Root privileges are required to make changes to the /etc/fstab file. Any changes made to this file should be performed with care, as mistakes may prevent the system from booting normally.
+
+			# In fact, it would be an excellent idea to create a backup of the /etc/fstab file before making changes. In the event of a disaster, the original file can be restored by copying the backup to the /etc/fstab file using a recovery of a live disk. To make a backup copy, as the root user, execute a command like the following:
+			in terminal{
+				root@localhost:~# cp /etc/fstab /etc/fstab.backup
+
+				output{
+					#
+					# /etc/fstab
+					# Created by anaconda on Fri Jan 17 10:31:51 2014
+					#
+					# Accessible filesystems, by reference, are maintained under '/dev/disk'
+					# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+					#
+					UUID=3db6ba40-67d2-403d-9c0a-9a901697cd8d /      ext4    defaults        1 1
+					UUID=09d641d5-bc5a-4065-8d80-8ae797dfa7f3 /boot  ext4    defaults        1 2
+					UUID=5ee634a5-c360-4211-a41b-9aa40d78a804 /home  ext4    defaults        1 2
+					UUID=34819281-65e3-4c78-ba2d-16952684c9cb swap   swap    defaults        0 0
+					tmpfs                   /dev/shm                tmpfs   defaults        0 0
+					devpts                  /dev/pts                devpts  gid=5,mode=620  0 0
+					sysfs                   /sys                    sysfs   defaults        0 0
+					proc                    /proc                   proc    defaults        0 0
+				}
+			}
+
+			# Notice that the first seven lines of this file are comments because they start with the # character. To add comments to the file, start a line with a # character. The existing comments recommend referring to man pages for the fstab, findfs, mount, and blkid commands.
+
+			Device Identifier{
+				# The first column identifies the device to be mounted. This could be the name of a device like /dev/sdb1 in the previous manual mount examples. However, the /etc/fstab file is read at boot time when the system is unattended, so it is not always possible to predict the name of the devices. For example, if SATA cables are switched during maintenance, the /dev/sda device may change places with the /dev/sdb device.
+
+				UUID{
+					# For this reason, the most common way to refer to a partition is by using a universally unique identifier (UUID), as in the following example:
+					{
+						UUID=3db6ba40-67d2-403d-9c0a-9a901697cd8d /      ext4    defaults        1 1
+						-----------------------------------------
+
+						UUID=09d641d5-bc5a-4065-8d80-8ae797dfa7f3 /boot  ext4    defaults        1 2
+						-----------------------------------------
+
+						UUID=5ee634a5-c360-4211-a41b-9aa40d78a804 /home  ext4    defaults        1 2
+						-----------------------------------------
+					}
+
+					# To determine what the UUID value is for a device, use the blkid command. The output of this command will look similar to this, though the UUIDs will be different:
+					in terminal{
+						root@localhost:~# blkid
+						/dev/sda1: UUID="09d641d5-bc5a-4065-8d80-8ae797dfa7f3" TYPE="ext4"
+						/dev/sda2: UUID="3db6ba40-67d2-403d-9c0a-9a901697cd8d" TYPE="ext4"
+						/dev/sda3: UUID="34819281-65e3-4c78-ba2d-16952684c9cb" TYPE="swap"
+						/dev/sda5: UUID="5ee634a5-c360-4211-a41b-9aa40d78a804" TYPE="ext4"
+						/dev/sdb1: UUID="a9183c2c-ee1f-4e57-9a60-b0d9e87a0337" TYPE="ext4"
+						/dev/sdb2: UUID="71b38ae6-6824-4ad3-9e2f-821d7f532b97" TYPE="swap"
+					}
+
+					# The UUID is automatically created when the filesystem is created. It is considered the best way to identify local filesystems in the /etc/fstab file because it doesn't change after the filesystem has been created and it should always be unique. Even if the hard drive is moved to another computer, the UUIDs will be unique for each filesystem. Unfortunately, the UUID isn't easy to remember or type, so it is difficult to use for manual mounting.
+				}
+
+				Device Name{
+					# A second, more traditional way of specifying a local filesystem is to use the path name for the device, such as /dev/sda1 for the first partition on the first disk:
+					{
+						/dev/sda1  /      ext4    defaults        1 1
+						---------
+
+						/dev/sda2  /boot  ext4    defaults        1 2
+						---------
+
+						/dev/sda5  /home  ext4    defaults        1 2
+						---------
+					}
+				}
+
+				Labels{
+					# Another option is to use filesystem labels. The volume label can be set using the e2label command. For example, the following command will set a label called mydata on the /dev/sdb1 filesystem:
+					in terminal{
+						root@localhost:~# e2label /dev/sdb1 mydata
+					}
+					# The label for a filesystem can be viewed with the e2label command:
+					in terminal{
+						root@localhost:~# e2label /dev/sdb1
+						mydata
+					}
+
+					# Labels can also be created for the extents filesystem xfs, either while making the filesystem or by using the xfs_admin command:
+					in terminal{
+						root@localhost:~# xfs_admin -L myapps /dev/sdb3
+					}
+
+					# Labels can be viewed (if they are set) with the blkid command just like they were for the UUIDs. The output of the blkid command is helpful, as it shows how to use the label:
+					in terminal{
+						root@localhost:~# blkid /dev/sdb1
+						/dev/sdb1: UUID="a9183c2c-ee1f-4e57-9a60-b0d9e87a0337" TYPE="ext4" LABEL="mydata"
+					}
+
+					# Labels can be used in the first field of the /etc/fstab file, such as LABEL="mydata". If labels are created by a single administrator, unique labels can be ensured; however, multiple users with root access may accidentally create partitions with the same label name:
+					{
+						LABEL="root" /      ext4    defaults        1 1
+						------------
+
+						LABEL="boot" /boot  ext4    defaults        1 2
+						------------
+
+						LABEL="home" /home  ext4    defaults        1 2
+						------------
+					}
+
+					!!!! Be careful with labels because they are human generated and can be duplicated when cloning a disk.
+
+					# If the system detects a duplicate label, it is unpredictable which disk partition the system will actually mount when that label is used.
+				}
+
+				# The following table provides a summary of these three methods of referring to the partition to mount:
+					Method 			Advantages 																													Disadvantages
+					UUID 			Should always be unique, preventing any mounting conflicts. 																Hard to type and difficult to remember.
+					Device Name 	Easy to type and remember. 																									Device names can easily change, causing mounting errors.
+					Label 			Easy to type and remember. Label names won't dynamically change like device names, but they are not always unique. 			May not be unique like UUID naming.
+		
+			}
+
+			Mount Point Field{
+				# The second field is the mount point (mount directory) where the partition is to be mounted. It also corresponds to the second parameter to the mount command:
+				{
+					UUID=3db6ba40-67d2-403d-9c0a-9a901697cd8d /      ext4    defaults        1 1
+					UUID=09d641d5-bc5a-4065-8d80-8ae797dfa7f3 /boot  ext4    defaults        1 2
+					UUID=5ee634a5-c360-4211-a41b-9aa40d78a804 /home  ext4    defaults        1 2
+				}
+				# There is nothing special about a mount point, it is either an empty directory that was created with the mkdir command for that purpose or an existing directory.
+			}
+
+			Filesystem Field{
+				# The third field is the filesystem type. Enter the correct Type Code using the values provided by the following table:
+					Name 							Type Code
+					Fourth Extended Filesystem 		ext4
+					Third Extended Filesystem 		ext3
+					Second Extended Filesystem 		ext2
+					Extents Filesystem 				xfs
+					File Allocation Table 			vfat
+					ISO 9660 						iso
+					Universal Disc Format 			udf
+
+				
+				# In most cases, the filesystem type for regular partitions will be the ext4 filesystem:
+				{
+					UUID=3db6ba40-67d2-403d-9c0a-9a901697cd8d /      ext4    defaults        1 1
+																	 ----
+
+					UUID=09d641d5-bc5a-4065-8d80-8ae797dfa7f3 /boot  ext4    defaults        1 2
+																	 ----
+
+					UUID=5ee634a5-c360-4211-a41b-9aa40d78a804 /home  ext4    defaults        1 2
+																	 ----
+				}
+			}
+
+			Mount Option Field{
+				### # The fourth field in the /etc/fstab file is a comma-separated list of the mount options which would normally be passed to mount with the -o options. This field is used to pass parameters to the filesystem driver, such as to make the device read-only or to adjust timeouts. Most filesystems have a huge number of mount options available:
+				{
+					UUID=3db6ba40-67d2-403d-9c0a-9a901697cd8d /      ext4    defaults        1 1
+																			 --------
+
+					UUID=09d641d5-bc5a-4065-8d80-8ae797dfa7f3 /boot  ext4    defaults        1 2
+																			 --------
+
+					UUID=5ee634a5-c360-4211-a41b-9aa40d78a804 /home  ext4    defaults        1 2
+																			 --------
+				}
+
+				# Earlier in this chapter, it was mentioned that partitions could be mounted read-only. To prevent any changes to a filesystem, place the read-only mount option in the corresponding line of the /etc/fstab file:
+				{
+					UUID=3db6ba40-67d2-403d-9c0a-9a901697cd8d /date      ext4    ro        1 1
+																				 --
+				}
+
+				# The most common mount option is the defaults option. The defaults mount option implies a number of standard mount options are in effect. The following table lists the mount options that are in effect when defaults is used, the purpose of the mount option, and the option that is the opposite of the default mount option (if available):
+					Mount Option 				Purpose 																																													Opposite
+					rw 							Allow reading and writing 																																									ro
+					suid 						Allow suid executes 																																										nosuid
+					dev 						Allow device files 																																											nodev
+					exec 						Allow executable files 																																										noexec
+					auto 						Automatically mount 																																										noauto
+					nouser 						Prevent ordinary users from mounting or unmounting the partition. Using the user option allows non-root users to mount that particular device, which is helpful for removable media. 		user
+					async 						All writes should be asynchronous 																																							sync
+					relatime 					Only update access time on file access if the file has been modified or its metadata changed since last access 																				N/A
+			
+				
+				# The following configuration will still be mounted in read/write mode, allow executable files, and so forth:
+				{
+					UUID=3db6ba40-67d2-403d-9c0a-9a901697cd8d /date      ext4    nosuid,nodev   1 1
+				}
+
+				# It is interesting to note that when using defaults for the mount options, the only mount option that will be displayed when the mount command is executed will be the rw options:
+				{
+					UUID=3db6ba40-67d2-403d-9c0a-9a901697cd8d /      ext4    defaults        1 1
+																							 -
+
+					UUID=09d641d5-bc5a-4065-8d80-8ae797dfa7f3 /boot  ext4    defaults        1 2
+																							 -
+
+					UUID=34819281-65e3-4c78-ba2d-16952684c9cb swap   swap    defaults        0 0
+																							 -
+				}
+
+				# The purpose of this field is to tell an administrator which filesystems should be backed up when using the dump command. The administrator would execute the dump -w command and the resulting output would be a list of the filesystems to back up. This list is generated by filesystems that have a value of 1 in the dump field of the /etc/fstab file. A value of 1 in this field is used for local real filesystems (filesystems on partitions that reside on local hard drives). Any pseudo-filesystems, remote filesystems, or swap space entries should have a 0 value in this field.
+
+				# This is a bit out of date, as the dump command is rarely used by system administrators on modern Linux distributions. However, it is important to know since the /etc/fstab file requires a valid entry in this field.
+			}
+
+			Filesystem Check Field{
+				{
+					UUID=3db6ba40-67d2-403d-9c0a-9a901697cd8d /      ext4    defaults        1 1
+																							   -
+
+					UUID=09d641d5-bc5a-4065-8d80-8ae797dfa7f3 /boot  ext4    defaults        1 2
+																							   -
+
+					UUID=34819281-65e3-4c78-ba2d-16952684c9cb swap   swap    defaults        0 0
+																							   -
+				}
+				# The sixth field is for determining the order in which the filesystems will be checked by the fsck (File System ChecK ) utility during system boot. This utility is designed to find and fix filesystem problems.
+				# The root filesystem should always have a 1 in this field to indicate that it will be checked by the fsck program first. All other local filesystems (ext2/ext3/ext4) should have a value of 2 specified for this field, so they will be checked after the root filesystem.
+
+				# Any pseudo-filesystems, remote filesystems, or swap space entries should have a 0 value in this field. These filesystems should never be checked by the fsck utility.
+			}
+		}
+
+		21.6 Mounting With fstab{
+			# There is a valuable mount option that will never be specified in the /etc/fstab file: the remount option. This option is useful for changing a mounted filesystem’s options without unmounting the filesystem itself.
+			in terminal{
+				root@localhost:~# mount /home -o remount, noatime
+			}
+			# This command will switch the /home mount to have the noatime option (the atime option shows the last time a file was accessed or read) without needing to remount the filesystem. Keep in mind that this will not persist across a reboot until the fstab file has been updated. Once changes have been made to the fstab file, execute something like the following to make them effective:
+			in terminal{
+				root@localhost:~# mount -o remount /mnt
+			}
+
+			# After updating the /etc/fstab file, don't reboot the system to test the changes. Instead, use the -o remount option. If the changes are correct, no message will be displayed, but if a mistake was made, an error like the following would be displayed:
+			in terminal{
+				root@localhost:~# mount -o remount /
+				mount: / not mounted already, or bad option
+			}
+			# If there are no errors in the corresponding entry contained within the /etc/fstab file, then the mount -o command will produce no output.
+
+			# The remount option is helpful but can lead to problems if the administrator allows the /etc/fstab file to get out of sync with the running configuration.
+		}
+
+		21.7 Systemd Mount Units{
+			# Another approach to mounting filesystems is by using systemd mount units. Systemd mount units are configuration files that end in .mount and contain information about resources to be mounted at startup.
+
+			# The systemd-mount utility is the mechanism that systemd uses to create and start a transient .mount file, destroy a transient .mount file, or to start an .automount unit of the filesystem.
+
+			# The [Unit] field:
+				{
+					[Unit]
+ 
+					Description=Mount unit for core, revision 6673
+					
+					Before=snapd.service
+				}
+				Field 				Purpose
+				Description 		Shows which mount unit is going to be mounted.
+				Before 				Shows the snapd.service file as the file name to be mounted.
+		
+			# The [Mount] field:
+				{
+					[Mount]
+ 
+					What=/var/lib/snapd/snaps/core_6673.snap
+					
+					Where=/snap/core/6673
+					
+					Type=squashfs
+					
+					Options=nodev,ro,x-gdu.hide
+				}
+				Field 		Purpose
+				What 		The file to be mounted including its path. Note that an absolute path must be used in the name of the mount unit which it controls.
+				Where 		The location it will be mounted to.
+				Type 		The filesystem type that the file is stored in. In the example above, this is squashfs, the compressed, read-only filesystem.
+				Options 	Defines the specific options to be used. The nodev option is a security feature that prevents block special devices (which could allow harmful code to be run) from being mounted on the filesystem. The ro option stands for read-only and the x-gdu.hide option prevents the snap mount from being visible to System Monitor.
+		
+			# The [Install] field:
+				{
+					[Install]
+ 
+					WantedBy=multi-user.target
+				}
+				Field 			Purpose
+				WantedBy 		Tells systemd that this filesystem is to be used by the multi-user boot target.
+		
+			# Although mount unit configuration does allow for more flexible mounting of resources. One case for network resources would be where having the ability to define things like how long to wait for the mount command to finish, is desirable. However, in many cases, using the fstab file is still the preferred approach.
+		}
+
+		21.8 loop Option{
+			# The loop option to the mount command is used to mount special filesystems that are stored within a file. These files have the extension of .img or .iso (for ISO 9660 filesystem files), which contain complete filesystems that can be mounted with the mount command by using the loop option:
+			in terminal{
+				root@localhost:~# mount -o loop fs.img /mnt
+
+				# or 
+
+				root@localhost:~# mount -o loop cdrom.iso /mnt
+			}
+
+			# To better understand the purpose of the loop option, consider the following scenario: A system administrator has been instructed to download an ISO file software.iso from the internet. This ISO file contains several RPM software packages that need to be installed on some local systems. The administrator has two choices, burn a DVD of the ISO file, or to mount the ISO file as part of the filesystem. To conserve resources, the administrator chooses to mount the ISO file.
+
+			# To gain access to these software packages, which all end with the .rpm extension, the system administrator mounts the ISO file and then copies the software packages by executing the following commands:
+			in terminal{
+				root@localhost:~# mount -o loop software.iso /mnt
+				root@localhost:~# mkdir /root/latestrpms
+				root@localhost:~# cp /mnt/*.rpm /root
+			}
+
+			# After copying the software packages to the /root/latestrpms directory, the software.iso file can be unmounted and deleted from the system.
+
+			Note{
+				## Almost everything in Linux is a file, including optical disks. If there is an image of a disk inside a file, it can be mounted directly from the file without needing to burn the image back on a disk using the loop option.
+			}
+		}
+
+		21.9 Monitoring Filesystems{
+			### ## The df command can also be used to view mounted filesystems. The output of this command displays the usage of the filesystem, where it's mounted, and the space usage of the device. To have the df command display filesystem sizes in human-readable format, use the -h option. Use the -T option to have the df command display the filesystem type:
+			in terminal{
+				root@localhost:~# df -hT
+				Filesystem    Type    Size  Used Avail Use% Mounted on
+				/dev/sda2     ext4    6.3G  3.2G  2.9G  53% /
+				tmpfs        tmpfs    351M   84K  351M   1% /dev/shm
+				/dev/sda1     ext4    485M   52M  408M  12% /boot
+				/dev/sda5     ext4    2.2G   69M  2.0G   4% /home
+			}
+
+			# The output displays the filesystems that have variable free space; the tmpfs filesystem, which is similar to a RAM disk, falls into this category, while other pseudo-filesystems like the proc filesystem, do not.
+		}
+
+		21.10 Mount a Filesystem{
+			# The following describes how to configure a new filesystem that has been created on the /dev/sdb1 device to mount during the boot process automatically. One single line will be added at the end of the /etc/fstab file. The assumption for this example is that the partition has been created by the fdisk command and the filesystem has been created by the mkfs command.
+
+			# Before modifying the /etc/fstab file, first, gather the information needed. Use the blkid command to determine the UUID or label of the new filesystem. The result will be similar to the following:
+			in terminal{
+				root@localhost:~# blkid dev/sdb1
+				/dev/sdb1: UUID="a9183c2c-ee1f-4e57-9a60-b0d9e87a0337" TYPE="ext4" LABEL="mydata"
+			}
+			# Next, create a mount point in the existing tree with the mkdir command:
+			in terminal{
+				root@localhost:~# mkdir /data
+			}
+
+			# In this example, the filesystem label will be used. So, the first field should be:
+				LABEL="mydata"
+				-------------
+			# Now, place the following as the second field:
+				LABEL="mydata" /data
+							   -----
+			# Assuming the filesystem on the partition is the Fourth Extended type, the value for the third field will be:
+				LABEL="mydata" /data ext4
+									 ----
+			# Unless there is a compelling reason not to do so, use the defaults for the mount options field by specifying the value for the fourth field as:
+				LABEL="mydata" /data ext4 defaults
+										  --------
+			# Since /dev/sdb1 is formatted as an ext4 filesystem and this device is local to the system, the fifth field (the dump check) should be enabled with the value of:
+				LABEL="mydata" /data ext4 defaults 1
+												   -
+			# By the same logic, the sixth field should have the value:
+				LABEL="mydata" /data ext4 defaults 1 2
+													 -
+												
+
+			# Putting all of these fields together for the normal entry into the /etc/fstab file results in the following line:
+				LABEL="mydata"  	/data 			ext4			defaults		1			2
+				Device 				Mount Point 	Filesystem 		Options 		dump 		fsck
+
+			# After modifying the /etc/fstab file, check that the new line has been added correctly by mounting the filesystem with only the mount point or device name as an argument:
+			in terminal{
+				 root@localhost:~# mount /data
+
+				 root@localhost:~# mount /dev/sdb1
+			}
+		}
+
+		21.11 Activate Swap Space{
+			# The following describes how to configure a new swap partition that has been created on the /dev/sdb2 device to activate during the boot process automatically. One single line will be added at the end of the /etc/fstab file. The assumption here is that the partition has been created by the fdisk command and the partition has been configured as a swap partition with the mkswap command.
+
+			# For the first field, specify the device. Again, use the blkid command to gather the information about this partition. The output would look something like the following:
+			in terminal{
+				root@localhost:~# blkid /dev/sdb2
+				/dev/sdb2: UUID="6f450a83-9d2e-409f-8bce-826696a49e54" TYPE="swap" LABEL="myswap"
+			}
+
+			# In this example, the swap label will be used. So, the first field should be:
+				LABEL="myswap"
+				--------------
+
+			!!! # When creating an entry for a swap file instead of a swap partition, always use the path name for the swap file, such as /root/swapfile. This is the only setting in the /etc/fstab entry that will be different for a swap file than a swap partition.
+
+			# For the mount point in the second field, all swap partitions always use the following:
+				LABEL="myswap" swap
+							   ----
+
+			# For the filesystem type in the third field, all swap partitions always use the following:
+				LABEL="myswap" swap swap
+									----
+			
+			# The defaults mount option can be used with swap partitions or swap files, just as it can be used with regular filesystems. In most cases, using defaults is fine for performance if all swap devices are equal in read/write performance; for this example, the defaults option will work well for the value of the fourth field:
+				LABEL="myswap" swap swap defaults
+										 --------
+			
+			# The fifth and sixth fields, the dump check and filesystem check fields, are never enabled for either swap partitions or swap files, so they should both be zero:
+				LABEL="myswap" swap swap defaults 0 0
+												  ---
+
+			# Putting all of these fields together for the normal swap partition into the /etc/fstab file results in the following line:
+				LABEL="myswap"		swap			swap			defaults		0		0
+				Device 				Mount Point 	Filesystem 		Options 		dump 	fsck
+		
+			### ## To verify that the swap partition or file has been added correctly, use the swapon -a command; this will activate all swap entries in the /etc/fstab file. Errors about not being able to activate spaces that were already active can be ignored, but errors in trying to activate the new swap space must be corrected in the /etc/fstab file before rebooting, or there may be issues later.
+
+			### # After using the swapon -a command, verify that the swap partition or file is now activated by using the swapon -s command. If the output includes the new swap partition, then the entry should be correct in the /etc/fstab file.
+
+			# As mentioned previously, the only difference in a line that describes a swap partition versus a swap file is the first field:
+				/var/swapfile		swap			swap			defaults		0		0
+				Device 				Mount Point 	Filesystem 		Options 		dump 	fsck
+		}
+
+		key terms{
+			/etc/fstab
+				A file that contains descriptive information about various file systems. The filesystems described in this file will eventually be mounted by the mount command either manually or when the system is booted.
+				Section 21.5 | Section 21.6 | Section 21.10 | Section 21.11 
+			/media/
+				The directory containing subdirectories used as mount points for removable media such as floppy disks, cdroms, dvds, and flash drives.
+				Section 21.3 
+			blkid
+				Command that can be used to determine the UUID value for a device.
+				Section 21.5 
+			fsck
+				Command used to check and optionally repair one or more Linux file systems. If no filesystem is specified with the command, fsck will check all filesystems in the /etc/fstab file by default.
+				Section 21.5 
+			lsblk
+				Command that lists information about block devices.
+				Section 21.2 
+			mount
+				Command used to tell the Linux kernel to attach a files system found on a device to a certain directory.
+				Section 21.2 | Section 21.3 | Section 21.5 | Section 21.6 | Section 21.7 | Section 21.8 | Section 21.10 
+			umount
+				Command used to tell the Linux kernel to detach a file system found on a device from a certain directory.
+				Section 21.3 | Section 21.4 
 		}
 	}
 
