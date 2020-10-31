@@ -3951,7 +3951,7 @@ chapter 19 and 20{
 
 				# To summarize, the following is a table of options available for tune2fsto tune a ext2, ext3 or ext4 filesystem:
 					Option 		Effect
-					-1 			List the superblock information for a filesystem.
+					-l			List the superblock information for a filesystem.
 					-c 			Change the maximum number of times that a filesystem may be mounted before it is required to have a full filesystem check. The default value is normally 30 times. This can be disabled by setting the value to 0.
 					-i 			Change the maximum time interval between when a filesystem is forced to have a full filesystem check. The default value is 180, meaning 180 days. This can be disabled by setting the interval to 0.
 					-j 			Create a journal file for an ext2 filesystem, allowing it to be mounted as an ext3 or ext2 filesystem.
