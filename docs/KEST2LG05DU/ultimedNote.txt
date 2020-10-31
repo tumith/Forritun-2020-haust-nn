@@ -3787,8 +3787,195 @@ chapter 19 and 20{
 
 			When a partition or disk is formatted, the sectors in the hardisk is first divided into small groups. 
 
-			This groups of sectors is called as blocks. The block size is something that can be specified when a user formats a partition using the command line parameters available
+			This groups of sectors is called as blocks. The block size is something that can be specified when a user formats a partition using the command line parameters available	
+		}
+
+		me read{
+			22.2 Filesystem Issues{
+				!!! # Before discussing filesystem utilities in depth, it is important to discuss the most common causes of filesystem damage. For example, one of the easiest ways to damage a filesystem is to shut down the system improperly. You should never just flip the switch on a surge suppressor or pull the plug from its power source unless the system will not respond to all other attempts to shut it down properly. In many cases, just pressing the power button once will cause many systems to shut down gracefully (this depends on the hardware and BIOS settings of the computer).
+
+				# There are also a few commands available to shut down the Linux system from the command line. For example, the following init commands and user commands are available. 
+					Init Command 		Purpose 					User Command
+					init 0 				Shut the system off 		halt
+					init 6 				Restart the system 			reboot
 				
+				# Be aware that the init commands require root privileges, whereas the user commands do not if the user is logged in locally and there are no other users logged into the system. Also, discretion is recommended when using the init command as it is abrupt and can cause unintended consequences. In some cases, it is considered more appropriate to use the shutdown -h, shutdown -r, poweroff, or even reboot commands, many of which are links to each other. 
+			}
+
+			22.3 Monitoring Disk Info{
+				# Two storage-related statistics that should be monitored closely to ensure a system will continue to run correctly are free data block space and free inodes. The df command can help monitor both of these important numbers. 
+
+				# By default, the df command without any option or arguments will display filesystems usage using 1K (1024 bytes) data block size:
+				in terminal{
+					sysadmin@localhost:~$ df
+					Filesystem     1K-blocks       	Used	Available Use%  Mounted on
+					overlay       3711914792   119199908  3404137348    4%  /
+					tmpfs         	66007320           0  	66007320    0%  /dev
+					tmpfs         	66007320           0  	66007320    0%  /sys/fs/cgroup
+					/dev/sda2     3711914792   119199908  3404137348    4%  /etc/hosts
+					shm                65536           0       65536    0%  /dev/shm
+				}
+
+				### # When executed with the -h option, the output of the df command is displayed in human-readable units such as MiB and GiB:
+				in terminal{
+					sysadmin@localhost:~$ df  -h
+					Filesystem    	Size  Used Avail Use% Mounted on
+					overlay       	3.5T  114G  3.2T   4% /
+					tmpfs            63G     0   63G   0% /dev
+					tmpfs            63G     0   63G   0% /sys/fs/cgroup
+					/dev/sda2       3.5T  114G  3.2T   4% /etc/hosts
+					shm              64M  	 0   64M   0% /dev/shm
+				}
+
+				### # Additional options will yield even more interesting and helpful information, try adding a -T to the df command to see the filesystem Type added as a column to the output:
+				in terminal{
+					sysadmin@localhost:~$ df -hT
+					Filesystem 	Type     Size  Used Avail Use% Mounted on
+					overlay    	overlay  3.5T  114G  3.2T   4% /
+					tmpfs      	tmpfs 	  63G     0   63G   0% /dev
+					tmpfs      	tmpfs 	  63G     0   63G   0% /sys/fs/cgroup
+					/dev/sda2  	ext4     3.5T  114G  3.2T   4% /etc/hosts
+					shm        	tmpfs 	  64M     0   64M   0% /dev/shm
+				}
+
+				# Each file created in a filesystem is assigned a unique identifier by the filesystem. This identifier is known as an inode and there is a fixed number of them available when using ext2/ext3/ext4.In other words, if a filesystem has only 10,000 inodes, only 10,000 files can be stored in that filesystem.
+
+				### # To determine how many files have been created and how many inodes are still available for a filesystem, use the -i option to the df command:
+				in terminal{
+					sysadmin@localhost:~$ df -i
+					Filesystem    	Inodes     IUsed     IFree IUse% Mounted on
+					overlay    	235708416 502951 235205465    1% /
+					tmpfs       	16501830      19  16501811    1% /dev
+					tmpfs       	16501830      14  16501816    1% /sys/fs/cgroup
+					/dev/sda2  	235708416 502951 235205465    1% /etc/hosts
+					shm         	16501830       1  16501829    1% /dev/shm
+				}
+
+				# The number of inodes is determined when the filesystem is created. The default technique is to use a ratio that depends on how many data blocks the filesystem contains, so larger filesystems will contain more inodes. The options that can be used to affect this ratio will be discussed later.
+
+				# Be sure to view the output of the df command carefully to find filesystems that are getting low on data block space or inodes. If a filesystem is getting low, take steps like moving some files to another filesystem with more resources or removing files that are unnecessary.
+			}
+
+			22.4 The du Command{
+				# The directory usage du command will report the size of files and directories'; this can be helpful for finding the largest ones:
+
+				# The default output of the du command shows just two columns of information: the file size and the path name for the file. The du command is automatically recursive, so it will normally process not only the current directory but also all of its directories.
+
+				# An effective way to find the largest files within the specified directories is to pipe the output to the sort command with the -n option, so that the output will be sorted from smallest to largest. For example, executing the du | sort -n command in a user's home directory would result in output like the following, placing the largest files at the bottom of the output:
+				in terminal{
+					sysadmin@localhost:~$ du  | sort  -n  | tail  -10
+					4   	./Pictures
+					4   	./Public
+					4   	./Templates
+					4   	./Videos
+					8   	./Documents/School/Art
+					8   	./Documents/School/Engineering
+					8   	./Documents/School/Math
+					28  	./Documents/School
+					1128	./Documents
+					1180	.
+				}
+
+				!!!! Keep in mind that errors will likely result if the du command is run outside of a regular user's own home directory or the /tmp and /var/tmp directories.
+
+				### Two options used often with the du command are the human-readable -h option and the summary -s option to only display a summary of the entire directory. For example, executing the command below would display a human-readable summary of how much space is used by both the /bin and the /usr/bin directory.
+				in terminal{
+					sysadmin@localhost:~$ du -sh /bin /user/bin
+					6.6M	/bin
+					38M 	/usr/bin
+				}
+
+				### # To limit the depth of how recursive the du command will be, provide a numerical argument to the --max-depth option to indicate how many directories deep to display.
+				in terminal{
+					sysadmin@localhost:~$ du Documents
+					8       Documents/School/Math
+					8       Documents/School/Engineering
+					8       Documents/School/Art
+					28      Documents/School
+					4       Documents/Work
+					1128    Documents
+					sysadmin@localhost:~$ du --max-depth=1 Documents
+					28      Documents/School
+					4       Documents/Work
+					1128    Documents
+				}
+
+				### # If there are files or directories that shouldn't be included, use one or more --exclude options. Glob characters can be used as well to form the pattern to be used by the --exclude option.
+				in terminal{
+					sysadmin@localhost:~$ du --exclude=School Documents
+					4       Documents/Work
+					1100    Documents
+				}
+
+				# As an example of using these both options, analyze the output of the du command in the following example. To determine the size of each directory that is a direct child of the /usr directory, the --max-depth=1 option is used.
+
+				# The following command will be run as a regular user, which means accessing the /usr/lib/audit directory will result in an error as regular users do not have access to this directory. The --exclude=/usr/lib/audit option avoids this error
+				in terminal{
+					sysadmin@localhost:~$ du -h --max-depth=1 --exclude=/usr/lib/audit
+					4.0K	./Public
+					4.0K	./Downloads
+					4.0K	./Pictures
+					4.0K	./Videos
+					4.0K	./Templates
+					4.0K	./Desktop
+					4.0K	./Music
+					1.2M	./Documents
+					4.0K	./.cache
+					1.2M	.
+				}
+			}
+
+			22.5 The tune2fs Command{
+				# The tune2fs command can view and change some of the settings for ext2, ext3, and ext4 filesystems. Generally, this command is considered safe, but to avoid taking risks, a backup of the filesystem should be made before using the command.
+
+				# The tune2fs command has a number of options. Below are a few examples of common options that can be used on a filesystem.
+
+				# By default, each filesystem will have a full system check during the boot process either every 180 days or after 30 mounts, whichever comes first. Unfortunately, this slows the boot process, especially if all filesystems are checked during a single boot. Automatic filesystem checking can be disabled by executing the following:
+				in terminal{
+					root@localhost:~# tune2fs -c0 -i0 /dev/sdb1
+				}
+
+				### # In the example above, the -c option will change the maximum number of times that a filesystem may be mounted before it is required to have a full filesystem check. The default value of 30 times has been disabled by setting the value to 0. The -i option will change the maximum time interval between when a filesystem is forced to have a full filesystem check. This default value of 180 days has been disabled by setting the interval to 0.
+
+				# To automatically have the acl and user_xattr mount options apply any time filesystem is mounted, execute the following command:
+				in terminal{
+					root@localhost:~# tune2fs -o acl,user_xattr /dev/sdb1
+				}
+
+				### The -o option in the command above specifies the default mount options. By default, the Red Hat derived distributions specify that acl and user_xattr options are added to filesystems created during installation. Note that when applying multiple options, they need to be comma separated.
+
+				### Finally, to verify the changes have been saved, list the superblock information for the filesystem by using the -1 option:
+				in terminal{
+					root@localhost:~# tune2fs -1 /dev/sdb1
+				}
+
+				# To summarize, the following is a table of options available for tune2fsto tune a ext2, ext3 or ext4 filesystem:
+					Option 		Effect
+					-1 			List the superblock information for a filesystem.
+					-c 			Change the maximum number of times that a filesystem may be mounted before it is required to have a full filesystem check. The default value is normally 30 times. This can be disabled by setting the value to 0.
+					-i 			Change the maximum time interval between when a filesystem is forced to have a full filesystem check. The default value is 180, meaning 180 days. This can be disabled by setting the interval to 0.
+					-j 			Create a journal file for an ext2 filesystem, allowing it to be mounted as an ext3 or ext2 filesystem.
+					-m 			Specify the percentage of space to be reserved for the root user or privileged processes. The default value of 5% is often unnecessarily large for large filesystems.
+					-o 			Specify default mount options. By default, the RedHat derived distributions specify that acl and user_xattroptions are added to filesystems created during installation. When applying multiple options, they need to be comma separated.
+					-b 			Allows the block size to be specified. Valid block sizes are 1024, 2048, or 4096 bytes (some systems allow a block size of 8192). If the "wrong" block size is used, the filesystem may run out of data blocks before running out of inodes. If the average file size is smaller than 4 KiB, it may be beneficial to use a smaller block size closer to the average file size.
+					-I 			Allows the size of an inode to be specified. By default, mke2fs will make an inode size of 128 bytes. If the system uses SELinux or SambaV4, it may be beneficial to set this size to 256 bytes to allow space extended attributes that SELinux and sambaV4 use.
+					-i 			Allows a bytes/inode ratio to be specified. To avoid either running out of data blocks while still having inodes, or vice versa, set a ratio that will be close to the average file size. As each file requires at least one inode to store its meta-information, this is a critical value.
+					-N 			If the size of the average file is unknown, but the number of files required is known, use this option to specify exactly how many inodes to create
+			}
+
+			key terms{
+			
+				df
+					Command used to report file system disk space usage. df can be used with a FILE name agrument, if no FILE name is given, the sapce available on all urrently mounted file systems will be reported.
+					Section 22.3 
+				du
+					Command used to estimate file usage on a disk. du will summarize disk usage of each FILE, recursively for directories.
+					Section 22.4 
+				tune2fs
+					Command that allows a system administrator to adjust various tunable file system parameters such as mount count and maximum mount counts before a file system check needs completed. tune2fs works with the ext2/3/4 family of file systems.
+					Section 22.5 
+			}
+			
 		}
 	}
 
