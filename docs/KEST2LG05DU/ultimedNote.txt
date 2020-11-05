@@ -2824,7 +2824,7 @@ chapter 19 and 20{
 
 			in terminal{
 				(parted) h
-				align-check TYPE N                        check partition N for TYPE(min|opt) alignment
+				align-check TYPE N                       check partition N for TYPE(min|opt) alignment
 				help [COMMAND]                           print general help, or help on COMMAND
 				mklabel,mktable LABEL-TYPE               create a new disklabel (partition table)
 				mkpart PART-TYPE [FS-TYPE] START END     make a partition
@@ -3752,7 +3752,7 @@ chapter 21{
 }
 
 
-Ch22: Maintaining the integrity{
+Chapter 22: Maintaining the integrity{
 	in class{
 		1- to maintain the intergrity of filesystem you need to monitor it
 
@@ -3979,7 +3979,7 @@ Ch22: Maintaining the integrity{
 	}
 }
 
-Ch23: Fixing File system with fsck{
+Chapter 23: Fixing File system with fsck{
 
 	in class{
 		1- you need to backup your files regularly 
@@ -4288,5 +4288,279 @@ Ch23: Fixing File system with fsck{
 				A utility that can be run in order to repair any inconsistencies in a filesystem. The <command>xfs_repair</command> command can only be run on an unmounted filesystem
 				Section 23.5 
 		}
+	}
+}
+
+Chapter 24: Package Management{
+	24.2 RPM Package Management{
+		# Red Hat's package management system is based upon the file format used to package the software files used within that distribution, known as the RPM Package Manager. Although invented at Red Hat, RPM is used for managing software for many different distributions and is the baseline software management system defined by the Linux Standards Base.
+
+		## RPM files are available in two formats: .src.rpm files and .rpm files. Unless you are compiling the software yourself or viewing the source code of the software, you don't need to be concerned with the .src.rpm files. These files contain the source code that is used to build the binary .rpm files. The binary .rpm files are the ones that contain the compiled code that is ready to use.
+
+		# The files that are used by RPM have a specific naming convention to help identify the package, its version number, its release identifier, and which architecture the software was built for. For example, if a file was named:
+		{
+			x3270-x11-3.3.6-10.5.el6.i686.rpm
+
+			# Then critical information could be discovered from just the file name:
+
+			package_name-version-release.architecture.rpm
+		}
+
+		Package Name{
+			x3270-x11-3.3.6-10.5.el6.i686.rpm
+			---------
+
+			# The name of the package may include a hyphen. The name ends where the version number begins; the version number is always a decimal delimited number.
+		}
+
+		Version Number{
+			x3270-x11-3.3.6-10.5.el6.i686.rpm
+					  -----
+
+			# Immediately following the package name and the hyphen that follows the package name is the version number. This version number is set by the original developer of the software.
+		}
+
+		Realize Identifier{
+			x3270-x11-3.3.6-10.5.el6.i686.rpm
+							--------
+			
+			# Following the hyphen after the version number is the release identifier. Release identifiers are chosen by the packager (not the software developers) of the software, which is normally the vendor of the distribution.
+		}
+
+		Architecture{
+			x3270-x11-3.3.6-10.5.el6.i686.rpm
+									 ----
+			
+			# If a package contains binary code, then the computer architecture that the code was compiled on will be the final part of the file name before the .rpm file extension. There are several architecture types:
+			{
+				Code 			Architecture
+				------------------------------
+				noarch 			Packages that do not contain binary code, such as those that may only contain script files
+				src 			Packages that have not been compiled
+				i686 			Packages compiled to run in 32-bit mode on a Pentium 4 or later processor
+				x86_64 			Packages compiled to run in 64-bit mode on either an AMD 64-bit processor or an Intel EM64T 64-bit compatible processor
+			}
+		}
+	}
+
+	24.2.1 RPM Queries{
+		# Any user can perform RPM queries to display information about packages that are currently installed on the system or about RPM files that have yet to be installed (either on the filesystem or reachable by a URL). The difference between doing a query about an installed package versus an RPM file is two-fold:
+		{
+			### To query a package that is not installed, use the -p FILE option. The FILE argument specifies the path to a local .rpm file or URL of an .rpm file on the internet (ftp or http).
+
+			# To query an installed package, use only the package name.
+		}
+
+		# To perform any RPM query, always use the -q option with the rpm command. To query for basic package information, use the -i option:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -qi bash
+			Name        : bash
+			Version     : 4.2.46
+			Release     : 31.el7
+			Architecture: x86_64
+			Install Date: Tue Dec  4 14:38:13 2018
+			Group       : System Environment/Shells
+			Size        : 3667773
+			License     : GPLv3+
+			Signature   : RSA/SHA256, Mon Nov 12 14:21:49 2018, Key ID 24c6a8a7f4a80eb5
+			Source RPM  : bash-4.2.46-31.el7.src.rpm
+			Build Date  : Tue Oct 30 17:09:33 2018
+			Build Host  : x86-01.bsys.centos.org
+			Relocations : (not relocatable)
+			Packager    : CentOS BuildSystem <http://bugs.centos.org>
+			Vendor      : CentOS
+			URL         : http://www.gnu.org/software/bash
+			Summary     : The GNU Bourne Again shell
+			Description :
+			The GNU Bourne Again shell (Bash) is a shell or command language
+			interpreter that is compatible with the Bourne shell (sh). Bash
+			incorporates useful features from the Korn shell (ksh) and the C shell
+			(csh). Most sh scripts can be run by bash without modification.
+		}
+
+		# To perform a similar query on the RPM file for bash, the -p option would be added along with the -q and -i options:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -qip bash-4.2.46-31.el7.src.rpm
+		}
+
+		!!! ### Always remember that RPM queries require the use of the -q option for installed packages and the -qp for uninstalled package files. There are many different types of queries that can be performed, as described in the following table:
+		{
+			Option 				Purpose
+			------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+			-a 					List all of the installed packages currently on the system
+			-c 					Display a list of configuration files that belong to the package
+			-d 					List the documentation files that belong to the package
+			-i 					Display the package information
+			-K 					Check the package integrity
+			-l 					List all files in the package
+			--provides 			List the capabilities this package provides
+			-R 					List the capabilities that this package requires
+			--scripts 			List the scripts that are used before and after installation of the package
+			-s 					Display the state of each package file as normal, not installed or replaced
+		}
+
+		Querying Scripts{
+			# It is a good idea to query a package to see the scripts it will execute before installing an RPM file from a third-party source. Because root privileges are required by default to install or remove RPM packages from the system, these scripts will run as root during the installation or removal of a package from the system; this is potentially dangerous since scripts run as root can make any change to the system.
+
+			# Before installing the x3270-x11 package, the administrator could view the scripts to ensure that they are not dangerous by executing the following command:
+			in terminal{
+				[sysadmin@localhost ~]$ rpm -qp --scripts x3270-x11-3.3.6-10.5.el6.i686.rpm
+				postinstall scriptlet (using /bin/sh):
+				cd /usr/share/x3270/fonts && /usr/bin/mkfontdir
+				touch --no-create /usr/share/icons/hicolor
+				if [ -x /usr/bin/gtk-update-icon-cache ]; then
+				gtk-update-icon-cache -q /usr/share/icons/hicolor
+				fi
+				postuninstall scriptlet (using /bin/sh):
+				if [ "$1" = "0" ]; then
+				cd /usr/share/x3270/fonts && /usr/bin/mkfontdir
+				fi
+				touch --no-create /usr/share/icons/hicolor
+				if [ -x /usr/bin/gtk-update-icon-cache ]; then
+				gtk-update-icon-cache -q /usr/share/icons/hicolor
+				fi
+			}
+			# The output of this query shows that there is a postinstall and postuninstall script for this package. In this case, these scripts are not dangerous, as they are updating fonts and icons that the package may use.
+		}
+
+		Querying the Integrity of a Package{
+			# If an administrator is concerned with the security of the system, then not only should the administrator query a package to view its scripts, but also query the integrity of a package by using the -K option. To use this option on an .rpm file , import the public key file that is distributed by the same organization that packaged and distributed the .rpm file.
+
+			# Typically, the public keys for the distribution are automatically included with the system. For example, on a Red Hat-derived distribution, the public key files are stored in the /etc/pki/rpm-gpg directory. An administrator can import these keys into the RPM database with the command:
+			in terminal{
+				[sysadmin@localhost ~]$ rpm --import /etc/pki/rpm-gpg/*
+			}
+
+			# After the keys have been imported, then a package's integrity can be verified. For example, to verify the integrity of the x3270-x11 package, an administrator could execute the following command:
+			{
+				[sysadmin@localhost ~]$ rpm -qpK x3270-x11-3.3.6-10.5.el6.i686.rpm
+				x3270-x11-3.3-4.el7.x86_64.rpm: rsa sha1 (md5) pgp md5 OK
+			}
+
+			# Notice the only output that is capitalized is OK, meaning that the package is not corrupted. The following output has several acronyms capitalized along with NOT OK, indicating a corrupted package:
+			in terminal{
+				[sysadmin@localhost ~]$ rpm -qpK x3270-x11-3.3.6-10.5.el6.i686.rpm
+				x3270-x11-3.3-4.el7.x86_64.rpm: rsa sha1 (MD5) PGP MD5 NOT OK
+			}
+		}
+
+		Querying for Installed Packages{
+			# There are several methods to determine if a package is installed. If the exact package name is known, simply query the package by name. For example, to see if the bash package is installed, execute:
+			in terminal{
+				[sysadmin@localhost ~]$ rpm -q bash
+				bash-4.2.46-31.el7.src.rpm
+			}
+
+			# If the package is installed, then the output will be like the original RPM file name without the .rpm extension. If the package is not installed, the output will indicate so:
+			in terminal{
+				[sysadmin@localhost ~]$ rpm -q pickle
+				package pickle is not installed
+			}
+
+			# The * glob character may be useful if the exact package name is not known. For example, if you knew that the package name contained python, but you were unsure of the rest, then execute the following command:
+			in terminal{
+				[sysadmin@localhost ~]$ rpm -qa *python*
+				python-2.6.6-52.el6.x86_64
+				python-urlgrabber-3.9.1-9.el6.noarch
+				rpm-python-4.8.0-37.el6.x86_64
+				python-libs-2.6.6-52.el6.x86_64
+				python-pycurl-7.19.0-8.el6.x86_64
+				python-iniparse-0.3.1-2.1.el6.noarch
+			}
+
+			Note{
+				# To get an alphabetical list of all installed packages, execute the rpm -qa | sort command. To get a chronological list of all packages, execute the rpm -qa --last command.
+			}
+		}
+	}
+
+	24.2.2 Installing Packages With rpm{
+		# A dependency is a software package (or a feature) that is required for another package to be installed and function correctly. When an administrator uses the rpm command to install a .rpm software package, that process will fail if the dependencies for that package are not already installed.
+
+		# For example, to install the x3270-x11-3.3.6-10.5.el6.i686.rpm package, execute:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -i x3270-x11-3.3.6-10.5.el6.i686.rpm
+		}
+
+		# If there were any missing dependencies, the rpm command would fail and display an error message like the following:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -i x3270-x11-3.3.6-10.5.el6.i686.rpm
+			error: Failed dependencies:
+				libicuuc.so.42 is needed by x3270-x11-3.3.6-10.5.el6.i686
+				x3270 = 3.3.6 is needed by x3270-x11-3.3.6-10.5.el6.i686
+		}
+
+		# Based upon the previous output, a library or shared object file named libicuuc.so.42 and the x3270 package (version 3.3.6) are missing. The library file is a bit tricky since it is not clear what package it belongs to. Searching the internet using the library file name reveals that the missing package needed in order to install the library file is named libicu.
+
+		# It is important to note that sometimes a package and its dependencies must be installed at the same time if there are any circular dependencies between them. Once the x3270 and libicu packages are located, then the administrator would install them along with the x3270-x11 package by executing a command like the following:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -i x3270-x11-3.3.6-10.5.el6.i686.rpm x3270-3.3.6-10.5.el6.i686.rpm libicu-4.2.1-9.1.el6_2.i686.rpm
+		}
+
+		# The RPM system uses a database to track the capabilities of each previously installed package. An RPM file contains a list of package dependencies. Before installing an RPM package, the rpm command compares this information to determine if the dependencies were satisfied.
+
+		# Most administrators determine package dependencies by examining the output of a failed RPM package install. However, it is also possible to check the requirements and dependencies of a package in advance with the following rpm query (partial output shown):
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -qpR x3270-x11-3.3.6-10.5.el6.i686.rpm
+			/bin/sh
+			/usr/bin/mkfontdir
+			gtk2 >= 2.6
+			libICE.so.6
+			libicuuc.so.42
+			libnsl.so.1
+			libssl.so.10
+			libutil.so.1
+			x3270 = 3.3.6
+		}
+
+		Note{
+			To see what each package provides, perform a query with the --provides option. The output from the following command demonstrates that this package provides the required x3270 package with the version equal to 3.3.6:
+			in terminal{
+				[sysadmin@localhost ~]$ rpm -qp --provides x3270-3.3.6-10.5.el6.i686.rpm
+				config(x3270) = 3.3.6-10.5.el6
+				x3270 = 3.3.6-10.5.el6
+				x3270(x86-32) = 3.3.6-10.5.el6
+			}
+		}
+
+		# Occasionally, a package needs to be reinstalled, perhaps because a file from that package is missing. Normally, the rpm command will refuse to install a package that is already installed, but it can be forced by adding the --force option. For example, to reinstall the x3270 package, execute the following command:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm --force -i x3270-3.3.6-10.5.el6.i686.rpm
+		}
+	}
+
+	24.2.3 Erasing Packages with rpm{
+		### The rpm command can be used to erase (remove) packages from the system with the -e option. However, dependency issues may arise. If there were dependency issues when a group of packages was installed, then there may also be dependency issues when that group of packages is removed.
+
+		# For example, if an attempt was made to remove the x3270 or libicu packages without first removing the x3270-x11 package, then an error would occur:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -e x3270 libicu
+			error: Failed dependencies:
+				x3270 = 3.3.6 is needed by (installed) x3270-x11-3.3.6-10.5.el6.i686
+					libicuuc.so.42 is needed by (installed) x3270-x11-3.3.6-10.5.el6.i686
+		}
+
+		# In other words, the rpm command will not allow a package to be erased if it is a requirement of another package. If the x3270-x11 package were erased first, then the other two packages could be erased.
+
+		# In the case of circular dependencies, when packages depend on each other, then all the packages can be removed with a single rpm command by specifying all package names as an argument:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -e x3270-x11 x3270 libicu
+		}
+	}
+
+	24.2.4 Updating Packages With rpm{
+		# To update a package with a new version or newer release, use the rpm command with either the -U or the -F option. As was the case with installing or removing packages, dependency issues may arise when updating packages. Installing an updated package often requires the installation of updates to the packages that it depends upon.
+
+		# The -U option can be used with the rpm command to either install or update a package:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -U x3270-4.3.6-10.5.el6.i686.rpm
+		}
+
+		# On the other hand, when using the rpm command with the -F option, the package will only be updated if the package is already installed; this is called freshening the package:
+		in terminal{
+			[sysadmin@localhost ~]$ rpm -F x3270-4.3.6-10.5.el6.i686.rpm
+		}
+
+		!!! The kernel package is so critical that when a new version is available, it should be installed rather than updated or freshened. The kernel files are organized to allow for multiple versions to exist on the system simultaneously. In this way, if an updated kernel is installed on your system but is not functional, simply reboot the system and select the previous kernel from the bootloader menu.
 	}
 }
