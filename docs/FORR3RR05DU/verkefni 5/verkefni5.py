@@ -126,7 +126,7 @@ dbl.find(2)
 dbl.printList()
 print('\n')
 dbl.append(5)           # 5
-dbl.append(7)           # 5 7         
+dbl.append(7)           # 5 7
 dbl.push(1)             # 1 5 7 
 dbl.push(0)             # 0 1 5 7 
 dbl.append(10)          # 0 1 5 7 10
@@ -137,3 +137,4 @@ dbl.printList()
 print()
 dbl.find(5)     # False
 dbl.find(7)     # True
+
