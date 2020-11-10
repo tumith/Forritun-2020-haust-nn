@@ -42,7 +42,15 @@ class Node:
             return self.search(value,cur_node.left_child)
         elif value > cur_node.value and cur_node.right_child != None:
             return self.search(value,cur_node.right_child)
-        return False 
+        return False
+    
+    def find(self,value,cur_node):
+        if value == cur_node:
+            return cur_node
+        elif value < cur_node.value and cur_node.left != None:
+            return self.find(value,cur_node.left)
+        elif value > cur_node.value and cur_node.right != None:
+            return self.find(value,cur_node.right)
 
 
 class Tree:
@@ -69,7 +77,13 @@ class Tree:
         if self.root != None:
             return self.root.search(value,self.root)
         else:
-            return False           
+            return False
+
+    def find(self,value):
+        if self.root != None:
+            return self.root.find(value,self.root)
+        else:
+            return None    
 
 
 
@@ -86,3 +100,5 @@ tree.print_tree()
 print("tree height: " + str(tree.height()))
 
 print(tree.search(7))
+
+print(tree.find(3))
