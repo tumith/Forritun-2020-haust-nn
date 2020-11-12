@@ -4970,6 +4970,14 @@ Chapter 24: Package Management{
 	}
 
 	24.5.2 Removing Software With dpkg{
+		### ## There are a couple of ways that an administrator may remove a package, using the -r and -P options to the dpkg command. The difference between using the -r option and the -P option is that the -r option removes the package and the -P option purges the package. When a package is removed, almost all of its files are removed except for its configuration files. When a package is purged, all of the package files are removed, including the configuration files.
+
+		## The idea behind removing a package, but not removing its configuration files, is that the configuration files may be used again in the future if the package is reinstalled.
+
+		## Consider a scenario in which the joe package is installed to test the text editor that the package provides. After testing, the administrator has decided that they do not like that editor and would never install it again. Since the plan is to never install the package again in the future, the package could be purged from the system by the administrator executing the dpkg -P joe command.
+	}
+
+	24.5.3 Removing Software With dpkg{
 		# The dpkg command can retrieve a list of the packages that are installed on the system, or list the files that are in a package. For example, to see all the packages that are currently installed on a system, execute the dpkg -l command:
 		in terminal{
 			sysadmin@localhost:~$ dpkg -l
@@ -5069,5 +5077,455 @@ Chapter 24: Package Management{
 				* Description
 			Try executing dpkg -s perl in the terminal for yourself. It should be noted that all of the example outputs presented above were shortened for the sake of brevity. Feel free to try any of these examples in the terminal as well, in order to see their full outputs.
 		}
+	}
+
+	24.5.4 Configuring Packages With dpkg-reconfigure{
+		# As part of the process of installing a package, the Debian package management system will also configure that package. If the package needs to be reconfigured at some later point, execute the dpkg-reconfigure command. To execute the dpkg-reconfigure command, the following syntax can be used:
+		{
+			dpkg-reconfigure [OPTIONS...] PACKAGES...
+		}
+
+		# ‌⁠​​⁠​ A good example of using the dpkg-reconfigure command is with the tzdata package. When this package is configured, the administrator sets the time zone information for the computer's current location. If a system is moved to another location, particularly in a different time zone, then this package should be reconfigured by executing the dpkg-reconfigure tzdata command.
+		in terminal{
+			root@localhost:~# dpkg-reconfigure tzdata
+		}
+	}
+
+	24.5.5 Searching for Packages With apt-cache{
+		# If the system has the appropriate repositories configured in the /etc/apt/sources.list file and the administrator has already refreshed the cached information about which packages are available by executing the apt-get update command, then any user can search for packages by using the apt-cache search command with the following syntax:
+		{
+			apt-cache search KEYWORD
+		}
+
+		# The keyword that is used should match part of the name or description of the package to be located. Multiple keywords can be used to clarify the search further; for example, the apt-cache search web server command would provide better results than the apt-cache search web or apt-cache search server command.
+		in terminal{
+			sysadmin@localhost:~$ apt-cache search medusa
+			medusa - fast, parallel, modular, login brute-forcer for network services
+			python-medusa - Framework for implementing asynchronous servers
+			python-medusa-doc - Framework for implementing asynchronous servers
+		}
+
+		# The apt-cache command can also search for packages in a different way. To find out which dependencies a package has, the apt-cache depends PACKAGE command will list the packages required by the package-name. For example, to determine the dependencies of the apache2 package, execute the apt-cache depends apache2 command.
+		in terminal{
+			sysadmin@localhost:~$ apt-cache depends apache2
+			apache2
+				PreDepends: dpkg
+				Depends: lsb-base
+				Depends: procps
+				Depends: perl
+				Depends: mime-support
+				Depends: apache2-bin
+				Depends: apache2-utils
+				Depends: apache2-data
+				Depends: <perl:any>
+					perl
+				Conflicts: <apache2.2-bin>
+				Conflicts: <apache2.2-common>
+				Recommends: ssl-cert
+				Suggests: <www-browser>
+					dillo
+					edbrowse
+					hv3
+					lynx
+					chromium-browser
+					elinks
+			epiphany-browser
+				falkon
+				firefox
+				konqueror
+				links
+				links2
+				netrik
+				sugar-browse-activity
+				surf
+				w3m
+				wslu
+				xemacs21-mule
+				xemacs21-mule-canna-wnn
+				xemacs21-nomule
+			Suggests: apache2-doc
+			|Suggests: apache2-suexec-pristine
+			Suggests: apache2-suexec-custom
+			Suggests: ufw
+			Replaces: <apache2.2-bin>
+			Replaces: <apache2.2-common>
+		}
+
+		#  The apt-cache show PACKAGE command can also display the status of a package with information similar to the output of the dpkg -s PACKAGE command, but the apt-cache command displays more detailed information, including checksums that could be used to verify the original package.
+	}
+
+	24.5.6 Installing/Updating Packages With apt-get{
+		# After searching for a package, you may want to install that package and its required dependencies. Using the apt-get install PACKAGE command will download and prompt the administrator to install that package as well as its dependencies. For example, to install the apache2 package and its dependencies, execute the apt-get install apache2 command with administrative privileges:
+		in terminal{
+			sysadmin@localhost:~$ sudo apt-get install apache2
+			[sudo] password for sysadmin:
+			Reading package lists... Done
+			Building dependency tree
+			Reading state information... Done
+				The following additional packages will be installed:
+				apache2-bin apache2-data apache2-utils libapr1 libaprutil1
+				libaprutil1-dbd-sqlite3 libaprutil1-ldap libasn1-8-heimdal
+				libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
+				libheimntlm0-heimdal libhx509-5-heimdal libkrb5-26-heimdal libldap-2.4-2
+				libldap-common liblua5.2-0 libnghttp2-14 libroken18-heimdal libsasl2-2
+				libsasl2-modules libsasl2-modules-db libwind0-heimdal ssl-cert
+			Suggested packages:
+				www-browser apache2-doc apache2-suexec-pristine | apache2-suexec-custom
+			libsasl2-modules-gssapi-mit | libsasl2-modules-gssapi-heimdal
+				libsasl2-modules-ldap libsasl2-modules-otp libsasl2-modules-sql
+				openssl-blacklist
+			The following NEW packages will be installed:
+				apache2 apache2-bin apache2-data apache2-utils libapr1 libaprutil1
+				libaprutil1-dbd-sqlite3 libaprutil1-ldap libasn1-8-heimdal
+				libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
+				libheimntlm0-heimdal libhx509-5-heimdal libkrb5-26-heimdal libldap-2.4-2
+				libldap-common liblua5.2-0 libnghttp2-14 libroken18-heimdal libsasl2-2
+				libsasl2-modules libsasl2-modules-db libwind0-heimdal ssl-cert
+			0 upgraded, 25 newly installed, 0 to remove and 28 not upgraded.
+			Need to get 2896 kB of archives.
+			After this operation, 11.2 MB of additional disk space will be used.
+			Do you want to continue? [Y/n]n
+		}
+
+		# The apt-get install PACKAGE command can also update a package, if that package is installed and a newer version is available. If the package is not already on the system, it would be installed; if it is on the system, it would be updated. To only update, execute the apt-get --only-upgrade install PACKAGE command
+		in terminal{
+			sysadmin@localhost:~$ sudo apt-get --only-upgrade install apache2
+		}
+
+		#  To update all packages of the system, two commands are executed. First, the apt-get update command to update the cache of all packages available should be executed. Second, execute the apt-get upgrade command; all packages and dependencies will be updated.
+	}
+
+	24.5.7 Removing/Purging Packages With apt-get{
+		# Just as the dpkg command is able to either remove or purge a package, so can the apt-get command. Recall that the difference between the two is that purging deletes all package files, while removing deletes all but the configuration files for the package.
+
+		# An administrator can execute the apt-get remove PACKAGE command to remove a package or the apt-get purge PACKAGE command to purge a package completely from the system. For example, to purge the web server completely, execute the apt-get purge apache2 command.
+		in terminal{
+			sysadmin@localhost:~$ sudo apt-get purge apache2
+		}
+	}
+
+	24.6 Verifying Files with Checksums{
+		# Early on, it was recognized that verifying the integrity of files was critical for users, administrators, and programmers that wanted to transfer data over computer networks. Systems connected by modems and telephone lines were subject to frequent transmission errors. More recent threats include hackers attempting to replace genuine software with malware versions.
+
+		# A checksum is a small piece of complementary data used to verify the integrity of a file (for example, F1). The file’s creator generates a checksum by applying a cryptographic hashing algorithm to the file’s contents. The resulting checksum (C1) is irreversible and highly unique. The creator can now confidently share the file (F1) and the checksum (C1) with others. Recipients who obtain a copy of the file (F2) can verify integrity by repeating the same hashing algorithm on the copy (F2), producing a new checksum (C2). If the two checksums match (C2 = C1), the recipient can be confident that their copy of the file is identical to the original (F2 = F1). If the checksums do not match, the copied file (F2) is corrupted and untrustworthy.
+	}
+
+	24.6.1 md5sum{
+		
+		!!!! The algorithm used for MD5 is no longer considered secure and should not be relied on for files that might be intentionally tampered with. It can still be used for checking known files in situations where security isn’t a concern.
+
+		# The md5sum command, based on the MD5 (message-digest 5) algorithm, creates a 128-bit hash using the original file.
+
+		# The following syntax can be used to create a checksum with the md5sum command:
+		syntax{
+			md5sum [OPTIONS]... [FILE]...
+		}
+
+		# Create a file in the /tmp directory and create the hash using the md5sum command and view the result:
+		in terminal{
+			[sysadmin@localhost]$ touch anyfile.txt
+			[sysadmin@localhost]$ md5sum anyfile.txt > anyfile.md5
+			[sysadmin@localhost]$ ls
+			anaconda-post.log  anyfile.md5  anyfile.txt  ks-script-mbvg2Y  yum.log
+			[sysadmin@localhost]$ cat anyfile.md5
+			d41d8cd98f00b204e9800998ecf8427e  anyfile.txt
+		}
+
+		# In the output above, the checksum that was generated appears in the anyfile.md5 file:
+		{
+			41d8cd98f00b204e9800998ecf8427e
+		}
+
+		# As you can see from the output of the following command, this is the same number sequence that appears if you were to execute the md5sum command with the anyfile.txt file as an argument:
+		in terminal{
+			[sysadmin@localhost]$ md5sum anyfile.txt
+			d41d8cd98f00b204e9800998ecf8427e  anyfile.txt
+		}
+
+		# The md5sum command can also be used to authenticate the file(s) with the check -c option. This is the option used to verify the integrity of the file by comparing the computed checksum of the file with the previously generated .md5 file
+		in terminal{
+			[sysadmin@localhost]$ md5sum -c anyfile.md5
+			anyfile.txt: OK
+		}
+	}
+
+	24.6.2 sha256sum{
+		# The sha256sum command creates a 256-bit checksum number that can be used to verify a file. This command uses a similar syntax to that of the md5sum command:
+		syntax{
+			sha256sum [OPTIONS]... [FILE]...
+		}
+
+		# Use the sha256sum command to create the checksum for the anyfile.txt file:
+		in terminal{
+			[sysadmin@localhost]$ sha256sum anyfile.txt > anyfile.sha256
+			[sysadmin@localhost]$ cat anyfile.sha256
+			e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  anyfile.txt
+		}
+
+		# Similar to the md5sum command, the sha256sum command can be used with the -c option to verify the integrity of the file:
+		in terminal{
+			[sysadmin@localhost]$ sha256sum -c anyfile.sha256
+			anyfile.txt: OK
+		}
+	}
+
+	24.6.3 sha512sum{
+		# The sha512sum command creates an even more secure 512-bit checksum for verifying files using the familiar syntax:
+		syntax{
+			sha516sum [OPTIONS]... [FILE]...
+		}
+
+		# Use the sha512sum command to create a 512-bit checksum for the anyfile.txt file:
+		in terminal{
+			[sysadmin@localhost]$ sha512sum anyfile.txt > anyfile.sha512
+			[sysadmin@localhost]$ cat anyfile.sha512
+			cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0
+			ff8318d2877eec2f63b931bd47417a81a538327af927da3e  anyfile.txt
+		}
+
+		### Again, as with both the md5sum command and the sha256sum command, the -c option is used to verify the integrity of the file:
+		in terminal{
+			[sysadmin@localhost]$ sha512sum -c anyfile.sha512
+			anyfile.txt: OK
+		}
+	}
+
+	24.7 SUSE Package Management{
+		# Several distributions use the ZYpp/libzypp package management engine, which primarily runs on openSUSE, SUSE Linux Enterprise, and Ark. Libzypp is the merged result of Ximian’s Red Carpet and SUSE’s YaST software management engines. Libzypp was designed to perform as the software package management scheme for SUSE products as well the failed and now mostly dormant Zenworks Linux Management suite from Novell.
+
+		# What the APT system and .deb packages are on the Debian/Ubuntu side, Libzypp and zypper are to the RPM side of package management on the SUSE platform. The need to query, install, remove, and update software packages is universal, as well as the all-important ability to satisfy software dependencies during these actions.
+
+		# The underlying dependency or satisfiability solver technology is the key to successfully being able to perform package management tasks on systems that can contain anywhere from hundreds to many thousands of individual packages, all with many dependencies on each other.
+
+		# For example, the libc library on a Linux system is a dependency for almost every other package subsequently installed. If libc is absent or incorrectly versioned, it could be catastrophic to the entire system.
+
+		# When a system is installed, the software packages must be installed in an exact order that ensures all dependencies are resolved. This is difficult enough at installation. Updating hundreds of packages is especially challenging on a running system that is a critical part of a company’s infrastructure.
+
+		# An important part of software management is the concept of repositories, which are essentially a shared network resource or local directory that provides a location for searching for software to install and update. Repositories come in several varieties, the first being those that are official and supported, such as the subscription channels/repositories that the SCC (SUSE Customer Center) provides for those with support subscriptions.
+
+		# The next variety is a 3rd-party repository. An excellent example of which is the Packman repository for the openSUSE community, where a lot of software that is not part of the official openSUSE or SUSE Linux Enterprise distributions can be found.
+
+		# The last variety is the local mirror or synchronized repository that an organization will use to maintain a local copy of the software that can be used by their internal or public-facing systems. The advantage of this third variety is that it keeps the number of hosts that query and mirror from the official software repositories to as low a number as possible. This is useful because the various supported subscription-based distributions all highly recommend a mirror or sync server.
+
+		# The command-line zypper tool's relationship to the rpm command is roughly analogous to the relationship between the apt-get tool’s relationship to the dpkg command. The zypper command is used to query, install, remove, update, manage repositories, and more; it depends on the rpm command’s abilities to accomplish most of these tasks.
+
+		# For example, a system operator could install a package with the rpm command, but if it had several dependencies, the system operator must then determine what packages are additionally needed and then install the dependencies and the initial package in the exact right order to be successful.
+
+		# Using zypper to install the same package is much easier, as it will do the hard work of reading the desired package’s dependencies, query the database of installed packages for those, and if they are not found, determine which software repository from the list of configured repositories that they may be obtained from. Then, the zypper command will inform the system operator of what is needed to install the desired package successfully.
+
+		# The syntax used for the zypper command examples in this course is the following:
+		syntax{
+			zypper [--GLOBAL-OPTS] COMMAND [--COMMAND-OPTS] [COMMAND-ARGUMENTS]
+		}
+
+		# To learn more about the zypper command’s syntax and usage, use the zypper help command:
+		in terminal{
+			localhost:~ # zypper help
+		}
+	}
+
+	24.7.1 Searching for Packages with zypper{
+		# Before a system operator does anything substantial with the zypper command, it is critical to refresh the information that zypper has about the repositories that the commands in this section will be querying and installing software from. The refresh ref command can be used to refresh the repository:
+		in terminal{
+			sysadmin@localhost:~> su -
+			Password:
+			localhost:~ # zypper ref
+			Repository 'sle-module-basesystem' is up to date.                               Repository 'sle-module-desktop-applications' is up to date.                     Repository 'sle-module-development-tools' is up to date.                        Repository 'Non-OSS' is up to date.
+			Repository 'SLES15-15-0' is up to date.
+			Repository 'SLES' is up to date.
+			Repository 'sle-module-server-applications' is up to date.                      All repositories have been refreshed.
+		}
+
+		# To find a package to install, use the search se command to query the configured repositories on the system.
+		syntax{
+			zypper se PACKAGE
+		}
+
+		# For example, to search for the gvim package, use the following:
+		in terminal{
+			localhost:~ # zypper se gvim
+			Loading repository data...
+			Reading installed packages...
+
+			S | Name | Summary      | Type
+			--+------+--------------+--------
+			  | gvim | A GUI for Vi | package
+		}
+
+		# The example searches for the graphical version of the vim command, gvim, and shows several useful pieces of information about the package. The first column, S, is the status column, and based on the output above, this package is not installed—if it was, there would be an i in this column.
+
+		# The rest of the line is fairly easy to grasp; the Name, a Summary and the Type of result are noted.
+	}
+
+	24.7.2 Installing Packages with zypper{
+		The zypper command can be used with the install in command to install packages.
+		syntax{
+			zypper in PACKAGE
+		}
+
+		# To install the gvim package, including any necessary dependencies, use the following command:
+		in terminal{
+			localhost:~ # zypper in gvim
+			Loading repository data...
+			Reading installed packages...
+			Resolving package dependencies...
+
+			The following NEW package is going to be installed:
+			gvim
+
+			1 new package to install.
+			Overall download size: 1.6 MiB. Already cached: 0 B. After the operation, additional 3.2 MiB will be used.
+			Continue? [y/n/...? shows all options] (y): y
+			Retrieving package gvim-8.0.1568-3.20.x86_64                              (1/1),   1.6 MiB (  3.2 MiB unpacked)
+			Checking for file conflicts: ........................................[done]
+			(1/1) Installing: gvim-8.0.1568-3.20.x86_64 .........................[done]
+		}
+
+		# Now that the gvim package is installed, re-running the zypper se gvim command again would show an i in the Status column to show gvim is installed.
+		in terminal{
+			localhost:~ # zypper se gvim
+			Loading repository data...
+			Reading installed packages...
+
+			S | Name | Summary      | Type
+			--+------+--------------+--------
+			i | gvim | A GUI for Vi | package
+		}
+
+		# If for some odd reason a package is installed and doesn’t work or is damaged, it’s important to know how to reinstall it in order to fix the issue, hopefully.
+
+		# To re-install (and force the overwriting of) the gvim package, as the root user, use the command:
+		in terminal{
+			localhost:~ # zypper in gvim
+			Loading repository data...
+			Reading installed packages...
+			Forcing installation of 'gvim-8.0.1568-3.20.x86_64' from repository 'sle-module-desktop-applications'.
+			Resolving package dependencies...
+
+			The following package is going to be reinstalled:
+			gvim
+
+			1 package to reinstall.
+			Overall download size: 1.6 MiB. Already cached: 0 B. No additional space will be used or freed after the operation.
+			Continue? [y/n/...? shows all options] (y): y
+			Retrieving package gvim-8.0.1568-3.20.x86_64                              (1/1),   1.6 MiB (  3.2 MiB unpacked)
+			Checking for file conflicts:..........................................[done]
+			(1/1) Installing: gvim-8.0.1568-3.20.x86_64...........................[done]
+		}
+	}
+
+	24.7.3 Managing repositories with zypper{
+		!!! # Any Linux system will regularly require updating, patching, and fixes. With all the new packages, updates to existing packages, security fixes, and patches, it can be a lot of work to keep a Linux system up-to-date unless you use a dependency-solving solution like APT or ZyPP/Libzypp.
+
+		# The zypper command interacts a lot with software repositories, which are the gathered collections of software for different purposes.
+
+		# To query the software repositories on a system, use the zypper command with the list repositories lr option:
+		in terminal{
+			localhost:~ # zypper lr
+			Repository priorities in effect:                                               (See 'zypper lr -P' for details)
+				99 (default priority) :  6 repositories
+				100 (lowered priority) :  1 repository
+
+			# | Alias                            | Name                            |Enabled | GPG Check | Refresh
+			--+----------------------------------+---------------------------------+---------+-----------+--------
+			1 | Basesystem-Module_15-0           | sle-module-basesystem           | Yes     | (r ) Yes  | No
+			2 | Desktop-Applications-Module_15-0 | sle-module-desktop-applications | Yes     | (r ) Yes  | No
+			3 | Development-Tools-Module_15-0    | sle-module-development-tools    | Yes     | (r ) Yes  | No
+			4 | Non-OSS                          | Non-OSS                         | Yes     | (r ) Yes  | No
+			5 | SLES15-15-0                      | SLES15-15-0                     | Yes     | (r ) Yes  | No
+			6 | SLES15_15-0                      | SLES                            | Yes     | (r ) Yes  | No
+			7 | Server-Applications-Module_15-0  | sle-module-server-applications  | Yes     | (r ) Yes  | No
+		}
+
+		# To add a repository to install additional software from, first find the repository URL, then use the add repository -ar option:
+		in terminal{
+			localhost:~ # zypper ar -f http://packman.inode.at/suse/openSUSE_Leap_15.1/ packman
+			Adding repository 'packman'.............................................[done]
+			Repository 'packman' successfully added
+
+			URI         : http://packman.inode.at/suse/openSUSE_Leap_15.1/
+			Enabled     : Yes
+			GPG Check   : Yes
+			Autorefresh : Yes
+			Priority    : 99 (default priority)
+
+			Repository priorities in effect:                                               (See 'zypper lr -P' for details)
+				99 (default priority) :  7 repositories
+				100 (lowered priority) :  1 repository
+		}
+
+		# To add a repository to install additional software from, first find the repository URL, then use the add repository -ar option:
+		in terminal{
+			localhost:~ # zypper ar -f http://packman.inode.at/suse/openSUSE_Leap_15.1/ packman
+			Adding repository 'packman'.............................................[done]
+			Repository 'packman' successfully added
+
+			URI         : http://packman.inode.at/suse/openSUSE_Leap_15.1/
+			Enabled     : Yes
+			GPG Check   : Yes
+			Autorefresh : Yes
+			Priority    : 99 (default priority)
+
+			Repository priorities in effect:                                               (See 'zypper lr -P' for details)
+				99 (default priority) :  7 repositories
+				100 (lowered priority) :  1 repository
+		}
+
+		# Notice that there is a URI/URL and a nickname (packman) that must both be present for the command to work.
+
+		# At this time, the zypper ref command would be run again to update the system with the latest metadata from all repositories, which will prompt for trusting the repository key.
+		in terminal{
+			localhost:~ # zypper ref
+			Repository 'packman' is up to date.
+			All repositories have been refreshed.
+		}
+
+		# When the query of the new repository is successful, the system can be updated or software operations are undertaken.
+		in terminal{
+			localhost:~ # zypper list-updates -t package
+			retrieving repository 'packman' metadata -------------------------------------------------------------------[|]
+
+			New repository or package signing key received:
+
+			Repository:       packman
+			Key Name:         PackMan Project (signing key) <packman@links2linux.de>
+			Key Fingerprint:  F8875B88 0D518B6B 8C530D13 45A1D067 1ABD1AFB
+			Key Created:      Mon Sep 15 16:18:00 2014
+			Key Expires:      Thu Sep 12 16:17:21 2024
+			Rpm Name:         gpg-pubkey-1abd1afb-54176598
+
+
+			Do you want to reject the key, trust temporarily, or trust always? [r/t/a/? shows all options] (r): a
+			Retrieving repository 'packman' metadata ........................[done]
+			Building repository 'packman' cache..............................[done]
+			Loading repository data...
+			Reading installed packages...
+			No updates found.
+		}
+	}
+
+	24.7.4 Updating Packages with zypper{
+		# The zypper command can also be used to update the packages in a repository.
+		syntax{
+			zypper -list-updates PACKAGE
+		}
+
+		# To see a listing of all the packages that are available for update from your repositories, you would use the list-updates command:
+		in terminal{
+			localhost:~ # zypper list-updates -t gvim
+			Loading repository data...
+			Reading installed packages...
+			No updates found.
+		}
+
+		# To perform an update of the system, (which will locate all updates in the configured repositories and perform a dependency-solve on them) use the update command:
+		in terminal{
+			localhost:~ # zypper update
+			Loading repository data...
+			Reading installed packages...
+			No updates found.
+		}
+
+		# Depending on the system and when it was installed, there may be no updates. If there are, they will be listed and the user queried to indicate if they want to download and install the updates. There are several options for updating the system in an unattended fashion, and the documentation is excellent.
 	}
 }
