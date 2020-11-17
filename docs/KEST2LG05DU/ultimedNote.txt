@@ -5529,3 +5529,399 @@ Chapter 24: Package Management{
 		# Depending on the system and when it was installed, there may be no updates. If there are, they will be listed and the user queried to indicate if they want to download and install the updates. There are several options for updating the system in an unattended fashion, and the documentation is excellent.
 	}
 }
+
+chapter 25 og 26{
+	in class{
+		Managing Shared libraries 
+			- what are the shared libraries:  
+			Also known as shared objects that include .so extension. 
+			- if two different programs use the same library it is shared into memory 
+			- if different programs linked to the same file saves disk space. 
+			ldd /bin/ls //shows all the libraries that binary file ls depends on. 
+			cd /etc   
+			ls | grep ld 
+			ld.so.cache: 
+			- contains all the libraries currently installed on the computer. 
+			we can't look at it in text editor because is stored as a binary file. 
+			- How this file created it's determined by the ls.so.conf file 
+			vi ld.so.conf // 
+			ld.so.conf.d  // 
+			ls  
+			vi ls.so.conf// 
+
+				The /etc/ld.so.conf file is used to configure which directories are searched for library files by the ldconfig command 	
+
+				/etc/ld.so.conf.d directory contains *.conf files which specify the library directories 
+
+
+				It also allows for those packages to simply remove there .conf file from that directory when the package is being removed.  
+
+				Example of a package that uses shared libraries, consider the mysql-libs package.  
+
+				This package installs a /etc/ld.so.conf.d/mysql-i386.conf file, which contains the following: /usr/lib/mysql 
+				If an administrator is compiling software from the source, or using software that is not packaged, a .conf file needs to be manually created. 
+				After adding or removing files in the /etc/ld.so.conf.d directory, the administrator needs to execute the ldconfig command to update the /etc/ld.so.cache cache file.
+
+			- determining associated libs 
+			- configuring system 
+			- ldd, ldconfig 
+			- ld.so.cache, ls.so.conf.d 
+
+		chapter 26{
+			Virtualization refers to systems or programs that are running on software platforms rather than directly on computer hardware.
+
+			The systems are using physical computing resources, but are abstracting the computing resources away from physical hardware.
+
+			Virtual Machines and Containers 
+
+				One type of virtualized system is a virtual machine, or VM. 
+
+				A VM is a complete operating system installed on virtual hardware using a hypervisor, Like VMware, Virtual Box and so on… 
+
+				The hypervisor is software that is installed on top of hardware, such as a server, creating a virtualization layer.  
+
+				There are two methods of installing virtualization on a computer system:
+
+					Type 1 hypervisor, also called a bare-metal hypervisor, installed directly on top of the hardware.
+
+					Type 2 hypervisor, also called a hosted hypervisor, installed on top of the operating system that already exists, the host operating system.
+
+				Another type of virtualization, container technology is rapidly being adopted. 
+
+				Linux Containers are containerized applications. 
+
+				Containers rely on a container engine to communicate with the host OS without a hypervisor, or a guest VM. 
+
+				Container advantages: 
+
+					Requires fewer resources. 
+
+					Cuts release cycle times. 
+
+					Abstracts program elements from host operating systems for better portability.
+
+			Virtualization Options 
+
+				There are many different virtualization vendors and open source projects to choose from: 
+
+					VMware 
+					
+					KVM (Kernel-based Virtual Machine) 
+					
+					Xen 
+					
+					Hyper-V 
+					
+					Virtual Box 
+					
+					Docker 
+					
+					Kubernetes
+			
+			IaaS is a form of cloud computing.  
+
+				Cloud computing is the delivery of on-demand shared computing resources (software and/or data) to organizations and users through the internet.  
+
+				Projects such as OpenStack, Apache Cloudstack, and OpenNebula have made cloud computing possible.
+
+			VM and Container Configuration 
+
+				Virtual machines and containers need to be able to connect to the outside world.  
+
+				Each resource needs a unique hostname and IP address along with proper subnet mask, DNS, and default route. 
+
+				Pre-configured images (virtual machine, or container) are stored as a set of files which will be lacking important information such as:  
+
+					Correct network settings, 	 
+	
+					Users, groups and permissions,  
+	
+					Paths to resources such as databases and storage blocks,  
+
+				SSH keys 
+		}
+
+		me read{
+			chapter 25{
+				25.1 Introduction{
+					# Shared libraries, also known as shared objects or system libraries, are files that include the .so extension as part of their name. By placing code that is used by many programs into library files that can be shared, each program file can be smaller, the programs can use a more consistent base of code, and less disk space overall is consumed.
+					
+					# When a program is executed, the /lib/ld-linux.so dynamic linker will find and load the shared libraries needed by a program, prepare the program to execute, and then run it. Older binaries in the a.out format are linked and loaded by the /lib/ld.so program. Both programs will search for the libraries in the /lib directory, the /usr/lib directory, the directories listed in the LD_LIBRARY_PATH environment variable, and from the /etc/ld.so.cache cache file.
+
+					# Managing shared libraries can be part of the management of the software of a system, especially if those libraries are placed in unusual locations within the filesystem. Library files that are located in the /lib or /usr/lib directories are normally configured to be automatically found by the programs that need them, but placing library files in other locations, such as the /usr/local/lib directory, may require configuring the system to be able to locate the shared libraries when needed.
+				}
+
+				25.2 /etc/ld.so.conf File{
+					# The /etc/ld.so.conf file is used to configure which directories are searched for library files by the ldconfig command during the boot process or when executed by the administrator. The ldconfig command creates links and caches the most recent shared libraries that are required by programs installed on the system. The /etc/ld.so.conf files contains the following content:
+					{
+						include ld.so.conf.d/*conf
+					}
+
+					# Instead of using the single file to contain a list of all the directories to search, the /etc/ld.so.conf.d directory contains *.conf files, which specify the library directories. This modular approach allows for packages that might be installed to add their own .conf file to the /etc/ld.so.conf.d directory. This, in turn, allows new libraries to be easily found. It also allows for those packages to simply remove their .conf file from that directory when the package is being removed. These actions would take place in the postinstall and postuninstall scripts.
+
+					# As an example of a package that uses shared libraries, consider the mysql-libs package. This package installs a /etc/ld.so.conf.d/mysql-i386 file, which contains the following:
+					{
+						/usr/lib/mysql
+					}
+
+					# Although the mysql-libs package demonstrates how shared libraries can be specified in a .conf file, placed in the /etc/ld.so.conf.d directory, note that the administrator doesn't have to do any additional work beyond installing or removing the mysql-libs package. An administrator should not need to manually manage shared libraries for software that is already packaged.
+				}
+
+				25.3 Manually Adding Library Files{
+					# If an administrator is compiling software from the source or using software that is not packaged, a .conf file needs to be manually created. For example, the administrator may have downloaded and installed software that was not packaged in an .rpm or a .deb file and then installed it in directories under the /usr/local directory structure, with its library files located under the /usr/local/lib directory structure. In order for these library files to be able to be loaded, create a /etc/ld.so.conf.d/local.conf file with the following content:
+					{
+						/usr/local/lib
+					}
+
+					# After adding or removing files in the /etc/ld.so.conf.d directory, the administrator needs to execute the ldconfig command to update the /etc/ld.so.cache cache file.
+
+					# After updating the /etc/ld.so.cache file, the ldconfig command can be used to display useful information about the system's libraries
+
+					# To display the name and path information for all the libraries that have been added to the cache, use the ldconfig command with the -p option:
+					in terminal{
+						sysadmin@localhost:~$ ldconfig -p | head -n 20
+						799 libs found in cache `/etc/ld.so.cache'
+							libzypp.so.1702 (libc6,x86-64) => /usr/lib64/libzypp.so.1702
+							libzio.so.1 (libc6,x86-64) => /usr/lib64/libzio.so.1
+							libz.so.1 (libc6,x86-64) => /lib64/libz.so.1
+							liby2util.so.5 (libc6,x86-64) => /usr/lib64/liby2util.so.5
+							liby2.so.4 (libc6,x86-64) => /usr/lib64/liby2.so.4
+							libyui.so.8 (libc6,x86-64) => /usr/lib64/libyui.so.8
+							libyelp.so.0 (libc6,x86-64) => /usr/lib64/libyelp.so.0
+							libycpvalues.so.6 (libc6,x86-64) => /usr/lib64/libycpvalues.so.6
+							libycp.so.5 (libc6,x86-64) => /usr/lib64/libycp.so.5
+							libyaml-0.so.2 (libc6,x86-64) => /usr/lib64/libyaml-0.so.2
+							libx86emu.so.1 (libc6,x86-64) => /usr/lib64/libx86emu.so.1
+							libxtables.so.12 (libc6,x86-64) => /usr/lib64/libxtables.so.12
+							libxslt.so.1 (libc6,x86-64) => /usr/lib64/libxslt.so.1
+							libxshmfence.so.1 (libc6,x86-64) => /usr/lib64/libxshmfence.so.1
+							libxml2.so.2 (libc6,x86-64) => /usr/lib64/libxml2.so.2
+							libxml-security-c.so.17 (libc6,x86-64) =>
+						/usr/lib64/libxml-security-c.so.17
+							libxklavier.so.16 (libc6,x86-64) => /usr/lib64/libxklavier.so.16
+							libxkbfile.so.1 (libc6,x86-64) => /usr/lib64/libxkbfile.so.1
+							libxkbcommon.so.0 (libc6,x86-64) => /usr/lib64/libxkbcommon.so.0
+					}
+
+					# The output about above shows how many libraries are configured in the cache, and also displays the library names and paths where they were found when added to the cache. Due to the very large number of libraries that a typical Linux system has installed, the examples are limited by using the head command.
+
+					# To display the list of library directories that are configured as well as their contents, the -v option can be used:
+					in terminal{
+						sysadmin@localhost:~$ ldconfig -v | head -n 20
+						/usr/local/lib64:
+						/usr/local/lib:
+						/usr/lib64/graphviz:
+							libgvplugin_neato_layout.so.6 -> libgvplugin_neato_layout.so.6.0.0
+							libgvplugin_dot_layout.so.6 -> libgvplugin_dot_layout.so.6.0.0
+							libgvplugin_core.so.6 -> libgvplugin_core.so.6.0.0
+						/lib:
+						/lib64:
+							libmultipath.so.0 -> libmultipath.so.0
+							libmpathpersist.so.0 -> libmpathpersist.so.0
+							libmpathcmd.so.0 -> libmpathcmd.so.0
+							libpamc.so.0 -> libpamc.so.0.82.1
+							libpam_misc.so.0 -> libpam_misc.so.0.82.1
+							libpam.so.0 -> libpam.so.0.84.2
+							libreadline.so.7 -> libreadline.so.7.0
+							libhistory.so.7 -> libhistory.so.7.0
+							libtirpc.so.3 -> libtirpc.so.3.0.0
+							libtinfow.so.6 -> libtinfow.so.6.1
+							libtinfo.so.6 -> libtinfo.so.6.1
+							libticw.so.6 -> libticw.so.6.1
+					}
+
+					# The ldconfig command has several other options, which can be viewed by executing the man ldconfig command
+					in terminal{
+						sysadmin@localhost:~$ man ldconfig
+					}
+				}
+
+				25.4 LD_LIBRARY_PATH{
+					# Users without administrative access to the system can also configure directories that will be searched by setting the LD_LIBRARY_PATH environment variable with the list of library directories. For example, if the user jose directory installed a program in the /home/jose/app with the library files for that application in the /home/jose/app/lib directory, then that user could execute:
+					in terminal{
+						sysadmin@localhost:~$ export LD_LIBRARY_PATH=/home/jose/app/lib
+					}
+
+					# Once that line has been executed, then the library files found in the /home/jose/app/lib directory could be found and located.
+				}
+
+				25.5 Idd Command{
+					# To verify or view the library files associated with a program, use the ldd command. For example, to view the libraries that are used by the /bin/bash executable, execute the ldd /bin/bash command. The output from this command would appear similar to the following:
+					in terminal{
+						sysadmin@localhost:~$ 1dd /bin/bash
+						        linux-vdso.so.1 =>  (0x00007fffe7ffe000)
+						        libtinfo.so.5 => /lib/x86_64-linux-gnu/libtinfo.so.5
+						(0x00007f280231e000)
+						        libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f280211a000)
+						        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f2801d53000)
+						        /lib64/ld-linux-x86-64.so.2 (0x00007f280254d000)
+					}
+
+					# If there is a problem with a library file not being loaded, then the line of the output may report not found. For example, if the mysq1-libs package library files were not correctly configured, then executing the 1dd /usr/bin/mysq1 command may display the following error output:
+					in terminal{
+						sysadmin@localhost:~$ 1dd /usr/bin/mysq1
+						ldd: /usr/bin/mysql: No such file or directory
+					}
+				}
+
+				key terms{
+					/etc/ld.so.conf
+						One of the cache files used by ldconfig.
+						Section 25.1 
+					LD_LIBRARY_PATH
+						A colon-separated set of directories where libraries should be searched for first, before the standard set of directories.
+						Section 25.1 | Section 25.4 
+					ldconfig
+						Creates the necessary links and cache to the most recent shared libraries and checks the header and filenames of the libraries it encounters when determining which versions should have their links updated.
+						Section 25.3 
+					ldd
+						Prints the shared libraries required by each program or shared library specified on the command line.
+						Section 25.5 
+				}
+			}
+
+			chapter 26 {
+				26.2 Virtual Machines and Containers{
+					# The first type of virtualized system is a virtual machine, or VM. This is where a complete operating system is installed on virtual hardware using a hypervisor to manage processes. The hypervisor is software that is installed on top of hardware, such as a server, creating a virtualization layer and acting as a platform for VMs to be created on. The hypervisor creates virtual resources such as CPUs, memory, hard disks and I/O communication interfaces like network and serial ports.
+
+					# There are two methods of installing virtualization on a computer system. The first method is to install a Type 1 hypervisor, also called a bare-metal hypervisor, directly on top of the hardware. The Type 1 hypervisor sits directly between the hardware and the virtual machine. The second method is called hosted virtualization. To set up a system with hosted virtualization, a Type 2 hypervisor, also called a hosted hypervisor, needs to be installed on top of the operating system that already exists, the host operating system, instead of on the hardware like a bare metal hypervisor.
+
+					# The operating system running in a VM is called a guest operating system. This operating system is usually installed as a pre-configured image, but it can also be built from installation sources such as CD, DVD, or PXE, to perform whatever tasks are needed by users. This configuration, along with installing application software, security patches, and network set-up is done by a systems administrator just as if it was a physical machine in a data center. Of course, being virtual, the VM might be sharing hardware with a number of other VMs. It might also be halfway around the world, physically closer to the clients that will be connecting to it.
+
+					consider this{
+						One of the main benefits of virtualization is that it makes computing resources more efficient. Traditionally, hardware could only run one computing system at a time, which may not have been a problem for individual users, however, with the growth of digital technology and increased needs for connectivity and data, data centers began adopting virtualization as a solution for providing computing resources efficiently.
+					}
+
+					# An outgrowth of virtualization, container technology is rapidly being adopted by software development organizations. Linux Containers allow system designers to bypass traditional operating systems and access computing resources differently. A containerized application relies on a container engine to communicate with the host OS without a hypervisor, or a guest VM. When programmers design these applications, they include all the dependencies needed to perform a specific task in the container. Also, typically, several containers are built which communicate with each other to perform tasks which previously would have been done by one program running on top of an OS.
+
+					# Doing this provides several advantages, including requiring fewer resources, cutting release cycle times, and abstracting program elements from host operating systems for better portability. Recently, there has been a move to Hybrid Container architecture. This consists of a multi-layered approach where a hypervisor, running on physical hardware, supports virtual machines that, in turn, host containers. 
+
+					# Organizations are weighing the pros and cons of the various configurations available today. Pros include: containers use fewer physical resources than VMs, offer enhanced reliability, and scalability. They also require less storage due to their lightweight nature and offer performance advantages both in startup time and application throughput. 
+					
+					# On the con side, when containers are run directly on hardware, they can require considerable effort to ensure segregation and maintain security. When running on shared resources, the container engine needs to be tuned to avoid interference between and within containers. The engine also needs to control access to resources such as memory, I/O devices, and network connections. Finally, when programmers are allowed to create these small, stand-alone resources, it becomes easier for their numbers to get out of control. The advantages of containerization can quickly be outweighed by time and effort spent managing and maintaining them if discipline isn’t exercised from the beginning. Fortunately, the open source community has embraced container development and the tools for designing, deploying, and maintaining them continue to grow at a rapid pace.
+				}
+
+				26.3 Virtualization Options{
+					VMware{
+						One of the oldest and most widely deployed platforms is VMware, owned by Dell Technologies. VMware develops and maintains a vast array of virtualization technologies as well as providing technical assistance for their customers. Their vSphere and ESXi hypervisor platforms are nearly ubiquitous across industries where customers value stability and support. 
+					}
+
+					KVM{
+						KVM, or Kernel-based Virtual Machine is an open source hypervisor that is built into Linux. It should not be confused with a KVM (keyboard, video, mouse) switch, a hardware device that allows multiple computers to share a single monitor. As an open source program, it has the advantage of being non-proprietary and lacking licensing fees. Its deployment is quite widespread because of this and it is generally considered more scalable than VMware. KVM is used extensively in the SUSE Linux Enterprise distribution
+					}
+
+					Xen{
+						The Xen project is another open source hypervisor. It is considered a Type 1 or bare metal system because it runs directly on hardware without a host OS. This, along with its microkernel design, allows for very high performance from a lightweight system. Although Xen is most frequently used with Linux, it’s not tied to any one OS. Xen is currently the only bare metal hypervisor offered as open source software and is a Linux Foundation collaborative project.
+					}
+
+					Hyper-V{
+						Hyper-V is a hardware virtualization product offered by Microsoft. It’s popular in environments already running Windows servers and desktop machines. Although it provides the appearance of a Type 2, or hosted hypervisor, running on top of Windows Server, it is actually installed beneath any Windows or other OS software. It also allows supported Linux distributions to be installed in a Windows environment.
+					}
+
+					Virtual Box{
+						VirtualBox is a popular open source product from Oracle that is relatively easy to install and configure. It is a Type 2 hypervisor that runs on Windows, Macintosh, and Linux hosts. It is billed as a “general-purpose full virtualizer for x86 hardware”. Although it will run in a server environment it’s more suited to desktop users that need to run different operating systems occasionally.
+					}
+
+					Docker{
+						As noted previously, Linux containers are quickly becoming the industry standard model for networked application development. The two most dominant forces in the containerization movement are Docker and Kubernetes
+						Docker is the container engine that allows programmers and system engineers to create containerized applications. These applications are stand-alone components that do not rely on any host OS to perform their functions. Its runtime, containerd, facilitates packaging application code and dependencies into a container that can run consistently across different infrastructure, thus allowing applications to operate regardless of the underlying infrastructure. As a top-level open source project of the Cloud Native Computing Foundation, containerd is constantly being improved to meet industry needs.
+					}
+
+					Kubernetes{
+						Kubernetes, originally developed by Google, was converted to an open source project in 2014. Kubernetes can be described as a platform that “provides a container-centric management environment” for containers, microservices, and cloud infrastructure. It provides labels and annotations to help users keep track of resources. It “orchestrates” computing, network, and storage resources for container applications and workflows. It is also highly integrated with Docker so both programs can work together.
+						Kubernetes is organized into clusters, nodes (formerly minions), pods, and containers. The master node is in charge of maintaining the desired state in the cluster. It provides communication to the APIs, starts and stops processes, and balances workloads
+					}
+				}
+
+				26.4 IaaS{
+					# Collectively, the elements we have been discussing are the foundation for IaaS (Infrastructure as a Service). IaaS is a form of cloud computing, which is the delivery of on-demand shared computing resources (software and/or data) to organizations and users through the internet.
+
+					# Cloud computing is a popular subject for discussion, and both organizations and individuals show a keen interest in the advantages it can provide. As soon as it became feasible for computer systems to create and manage other computer systems through virtualization and automation, programmers and system designers gravitated towards software-defined systems and networking. As a result, organizations are increasingly looking at the cloud as essential to their businesses and operations.
+
+					Consider this{
+						You often hear that something is "in the cloud", but what does that mean? Physically, a cloud can be described as computing resources from one or many off-site data centers which can be accessed over the internet.
+					}
+
+					# By abstracting the machines being managed from physical hardware, it becomes possible and desirable to construct systems in software as much as possible. By placing virtual machine instances on hardware managed by hypervisors and networking them together using software, not only were physical demands reduced but speeds were increased, as each part of a system only had to communicate within the APIs (application programming interfaces) of an orchestrating technology. Orchestrating systems such as OpenStack, Apache Cloudstack, and OpenNebula has made cloud computing possible.
+
+					# These systems have been able to advance quickly because open source software development allows different, often competing, companies to work together to create common standards and code bases. Each of these projects is broken down into smaller sub-projects, which can be developed by teams that specialize in a specific technical area. By working together, and sharing improvements in the code, they are able to construct robust systems that are adaptable to many different needs.
+
+					# Linux VMs have the ability to communicate with Linux containers, block storage pools, virtual network switches and routers, database stores, and every other component that was once part of a monolithic program or data center design. Ultimately, by creating hypervisors that run Linux VMs, today’s programmers and system architects have collaboratively created our modern online world in much less time and with far fewer resources than any one company could have achieved.
+				}
+
+				26.5 VM and Container Configuration{
+					# When a new virtual machine or container is created, it needs to be able to connect to the outside world. Like any other computer or resource on a network, it will need a unique hostname and IP address along with proper subnet mask, DNS, and default route. Since it is desirable to have images and containers created and managed by other programs, initialization scripts are required to make changes to a base image. 
+
+					# The image, which is stored as a set of files and ready to use, will be lacking important information such as the correct network settings, users, groups and permissions, paths to resources such as databases and storage blocks, SSH keys, and any other configurations that would normally be done manually by a system administrator. These scripts need to be flexible and addressable by other programs in order to minimize required inputs from human operators, and also need to be secure since they may contain sensitive information like login credentials.
+
+					# Fortunately, there are utilities such as cloud-init and kickstart scripts (for VMs) that can help simplify this process. These utilities can call other programs through an API, read metadata from a server, or configure instances. In kubernetes, there are even specialized containers, called Init containers, that run before application containers start.
+
+					# SSH, or secure shell, is used to communicate with and manage both VMs and containers. When a new virtual machine or container is created from an image, the administrator can use a utility like cloud-init to generate new SSH host keys. The key pair is a set of random mathematically related numbers generated by an algorithm that is used to authenticate a user (which could also be another system). Administrators can also generate key pairs manually with the ssh-keygen command. Incorrect or missing SSH keys are quite often the reason systems won’t communicate with each other even when IP addresses and hostnames are correct.
+
+					# Another factor that needs to be managed is the unique id of a system, or uuid. This uuid should be generated and added to the D-Bus machine ID configuration file during installation or when first booting the VM or container. The dbus-uuidgen command can be used to generate or read a universally unique ID for a system. This ID takes the form of a 128-bit number that is unique, or at least very unlikely to be duplicated until the year 3400 A.D. The uuid must remain unchanged until a system is rebooted so that processes know what kernel they are running on. Additionally, the uuid can be used to identify any object in a cloud deployment and is often used by SQL databases and other programming languages like JavaScript and Python to identify objects.
+
+					# The cloud-init utility can be used to automate initial configuration parameters on a Linux virtual machine. In addition to setting the hostname, SSH keys, and network configuration it can also set the root password, time zone, mount points, and invoke custom scripts that provide additional configurations not supported by cloud-init settings.
+
+					# Other critical settings to verify to ensure virtualized products, such as VMs and containers, function properly are the virtualization extensions, which are effectively hardware support for virtualization that is built into the CPU, such as Intel’s VT-x and AMD’s AMD-V extensions. These settings can be verified on a host system in the /proc/cpuinfo file and in the system BIOS. For example, the flags in the /proc/cpuinfo file below can be used to determine if Intel’s VT-x and AMD’s AMD-V extensions are installed:
+					in terminal{
+						sysadmin@localhost:~$ cat /proc/cpuinfo
+						Output Omitted...
+						physical id     : 1
+						siblings        : 8
+						core id         : 0
+						cpu cores       : 4
+						apicid          : 32
+						initial apicid  : 32
+						fpu             : yes
+						fpu_exception   : yes
+						cpuid level     : 11
+						wp              : yes
+						flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+						cmov
+						pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdt scp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cplvmxsmx est tm2 ssse3 cx16 xtprpdcm pcid dca sse4_1 sse4_2 popcnt aes lahf_lm tpr_shadow vnmi flexpriority ept vpid dtherm ida arat
+						bugs            :
+						bogomips        : 4787.47
+						clflush size    : 64
+					}
+
+					# In the output above, in the flags field, the lm flag means that the system has a 64-bit CPU and the vmx flag means that the Intel’s VT-x virtualization extension is enabled in the BIOS.
+
+					consider this{
+						To understand why virtualizations are needed, a brief explanation of CPU architecture is needed.
+						There are two main CPU architecture types: x86 and x64. The x86 architecture has roots that reach back to 8‐bit processors built by Intel in the late 1970s. As manufacturing capabilities improved and software demands increased, Intel extended the 8‐bit architecture to 16 bits. Later still, in 1985, Intel extended the architecture to 32 bits. The current 32-bit processor is what is known as x86. In 2003, AMD introduced a 64‐bit extension to the x86 architecture and later in 2004, Intel announced its own 64‐bit architectural extension. The current 64-bit processor is known as x64. Understanding the difference between the 32-bit and 64-bit is important because virtualization technology is compatible with 64-bit and but not with 32-bit.
+						To check which CPU type your Linux system is using, execute the lscpu command:
+						in terminal{
+							sysadmin@localhost:~$ lscpu
+							Architecture:        x86_64
+							CPU op-mode(s):      32-bit, 64-bit
+							Output Omitted...
+						}
+					}
+
+					# Finally, sometimes virtualization platforms require a guest operating system to be supported with specific drivers, called guest drivers or guest agents, that are not included in their standard distributions. Guest drivers provide additional functionality and performance such as mouse support to allow your hardware mouse to communicate with the VM, folder sharing between host and VM, automatic login settings, and time synchronization, to name a few. These drivers are necessary because the way a hypervisor communicates with physical hardware is different from how the OS would normally call hardware devices.
+				}
+
+				key terms{
+					Application container
+						Applications that are packaged and deployed in a way that allows them to bypass traditional operating systems and access computing resources.
+						Section 26.2 
+					D-Bus machine id
+						The configuration file that contains the unique id of a system, or uuid. This uuid should be generated and added to the D-Bus machine ID configuration file during installation or when first booting the VM or container.
+						Section 26.5 
+					Guest drivers
+						Virtualization software for guest operating systems that provides additional functionality and performance such as mouse support to allow your hardware mouse to communicate with a VM, folder sharing between host and VM, automatic login settings, and time synchronization.
+						Section 26.5 
+					Linux container
+						A containerized application relies on a container engine to communicate with the host OS without a hypervisor, or a guest VM.
+						Section 26.2 | Section 26.3 
+					SSH host keys
+						A set of random mathematically related numbers generated by an algorithm that is used to authenticate a user logging into another system.
+						Section 26.5 
+					Virtual machine
+						A virtualized computing system that provides a complete operating system installed on virtual hardware using a hypervisor to manage processes.
+						Section 26.2 
+				}
+			}
+		}
+	}
+}
