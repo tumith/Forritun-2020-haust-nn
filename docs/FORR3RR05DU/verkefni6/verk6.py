@@ -1,5 +1,6 @@
 # https://github.com/bfaure/Python_Data_Structures/blob/master/Binary_Search_Tree/main.py
 # https://www.youtube.com/watch?v=Zaf8EOVa72I&list=PLEJyjB1oGzx3iTZvOVedkT8nZ2cG105U7&index=6
+# https://www.geeksforgeeks.org/tree-traversals-inorder-preorder-and-postorder/
 
 class Node:
     def __init__(self, value=None):
@@ -14,14 +15,14 @@ class Node:
                 cur_node.left = Node(value)
                 cur_node.left.parent = cur_node   # seting parent
             else:
-                self.insert(value, cur_node.right)
+                self.insert(value, cur_node.left)
 
         elif value > cur_node.value:  # if value is higher then node value
             if cur_node.right == None:
                 cur_node.right = Node(value)
                 cur_node.right.parent = cur_node  # seting parent
             else:
-                self.insert(value,cur_node.left)
+                self.insert(value,cur_node.right)
         else:
             print('Value er núðegar í tréinu')
 
@@ -30,7 +31,39 @@ class Node:
             self.print_tree(cur_node.left)
             print(str(cur_node.value))
             self.print_tree(cur_node.right)
-    
+
+    # A function to do postorder tree traversal
+    def print_Postorder(self,cur_node):
+        if cur_node:
+            # First recur on left child
+            self.print_Postorder(cur_node.left)
+            # the recur on right child
+            self.print_Postorder(cur_node.right)
+            #no wprint the data of node
+            print(str(cur_node.value))
+
+    # A function to do inorder tree traversal
+    def print_Inorder(self,cur_node):
+        if cur_node:
+            # First recur on left child
+            self.print_Inorder(cur_node.left)
+            # then print the data of node
+            print(str(cur_node.value))
+            # now recur on right child
+            self.print_Inorder(cur_node.right)
+
+    # A function to do preorder tree traversal
+    def print_Preorder(self,cur_node):
+        if cur_node:
+            # First print the data of node
+            print(str(cur_node.value))
+            # Then recur on left child
+            self.print_Preorder(cur_node.left)
+            # Finally recur on right child
+            self.print_Preorder(cur_node.right)
+
+
+
     def height(self,cur_node,cur_height):
         if cur_node == None:
             return cur_height
@@ -57,7 +90,11 @@ class Node:
         
     def delete_node(self,node):
         # Vernda gegn því að reina að eyða node sem finnst ekki
-        if node == None or self.find(node.value) == None:
+        if node == None:
+            print("Node sem var verið að reina að eyða fannst ekki")
+            return None
+
+        elif self.find(node.value,node) == None:
             print("Node sem var verið að reina að eyða fannst ekki")
             return None
         
@@ -103,7 +140,7 @@ class Node:
         if node_children == 1:
 
             # get the single child node
-            if node.left = None:
+            if node.left == None:
                 child = node.left
             else:
                 child = node.right
@@ -119,8 +156,8 @@ class Node:
             else:
                 self.root = child
             
-            # correct the parent pointer in node
-            child.parent = node_parent
+                # correct the parent pointer in node
+                child.parent = node_parent
         
         # CASE 3 (node has two children)
         if node_children == 2:
@@ -151,6 +188,26 @@ class Tree:
     def print_tree(self):
         if self.root != None:
             self.root.print_tree(self.root)
+        else:
+            print('Það eru eingar tölur')
+
+    def print_Postorder(self):
+        if self.root != None:
+            self.root.print_Postorder(self.root)
+        else:
+            print('Það eru eingar tölur')
+    
+    def print_Inorder(self):
+        if self.root != None:
+            self.root.print_Inorder(self.root)
+        else:
+            print('Það eru eingar tölur')
+    
+    def print_Preorder(self):
+        if self.root != None:
+            self.root.print_Preorder(self.root)
+        else:
+            print('Það eru eingar tölur')
 
     def height(self):
         if self.root != None:
@@ -171,11 +228,15 @@ class Tree:
             return None
         
     def delete_value(self, value):
-        return self.root.delete_node(self.find(value))
+        if self.root != None:
+            return self.root.delete_node(self.find(value))
+        else:
+            return None
 
 
 
 tree = Tree()
+tree.print_tree()
 tree.insert(5)
 tree.insert(3)
 tree.insert(6)
@@ -183,8 +244,19 @@ tree.insert(1)
 tree.insert(2)
 tree.insert(7)
 tree.insert(10)
+
 tree.print_tree()
+
+# tree.print_Postorder()
+
+#tree.print_Preorder()
+
+# tree.print_Inorder()
 
 print("tree height: " + str(tree.height()))
 
 print(tree.search(7))
+tree.find(3)
+tree.delete_value(3)
+
+tree.print_tree()
